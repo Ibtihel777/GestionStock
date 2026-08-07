@@ -719,6 +719,22 @@
           }
         }
       },
+      "Scalar.AspNetCore/2.16.17": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "System.CodeDom/6.0.0": {
         "type": "package",
         "compile": {
@@ -971,6 +987,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "ERPStock.Application": "1.0.0",
           "ERPStock.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "9.0.18",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4"
@@ -2487,6 +2504,25 @@
         "postgresql.png"
       ]
     },
+    "Scalar.AspNetCore/2.16.17": {
+      "sha512": "J5FyUxdZE/QbS/s3NSE6XWoBIJwta1eOUBuDbieHm2HSfFELH8hOnxSsoEBreckoekfZ7STsMCMGmmUNPVVosg==",
+      "type": "package",
+      "path": "scalar.aspnetcore/2.16.17",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net10.0/Scalar.AspNetCore.dll",
+        "lib/net10.0/Scalar.AspNetCore.xml",
+        "lib/net8.0/Scalar.AspNetCore.dll",
+        "lib/net8.0/Scalar.AspNetCore.xml",
+        "lib/net9.0/Scalar.AspNetCore.dll",
+        "lib/net9.0/Scalar.AspNetCore.xml",
+        "scalar.aspnetcore.2.16.17.nupkg.sha512",
+        "scalar.aspnetcore.nuspec"
+      ]
+    },
     "System.CodeDom/6.0.0": {
       "sha512": "CPc6tWO1LAer3IzfZufDBRL+UZQcj5uS207NHALQzP84Vp/z6wF0Aa0YZImOQY8iStY0A2zI/e3ihKNPfUm8XA==",
       "type": "package",
@@ -2896,7 +2932,8 @@
       "ERPStock.Application >= 1.0.0",
       "ERPStock.Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.6",
-      "Microsoft.EntityFrameworkCore.Design >= 9.0.18"
+      "Microsoft.EntityFrameworkCore.Design >= 9.0.18",
+      "Scalar.AspNetCore >= 2.16.17"
     ]
   },
   "packageFolders": {
@@ -2966,6 +3003,10 @@
             "suppressParent": "All",
             "target": "Package",
             "version": "[9.0.18, )"
+          },
+          "Scalar.AspNetCore": {
+            "target": "Package",
+            "version": "[2.16.17, )"
           }
         },
         "imports": [
