@@ -28,3 +28,5 @@ appsettings.Production.json
 *.tmp
 .DS_Store
 Thumbs.db
+
+ERPStock.Frontend/node_modules/ ERPStock.Frontend/dist/
