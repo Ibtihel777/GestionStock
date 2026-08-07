@@ -1,0 +1,30 @@
+## Visual Studio ##
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build results ##
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+
+## NuGet ##
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+## Fichiers de config sensibles (optionnel mais recommandé) ##
+appsettings.Development.json
+appsettings.Production.json
+
+## Divers ##
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
