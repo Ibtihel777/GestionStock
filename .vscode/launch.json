@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Déboguer l'API GestionStock",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "API : compiler",
+      "program": "${workspaceFolder}/ERPStock.API/bin/Debug/net9.0/ERPStock.API.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/ERPStock.API",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7081;http://localhost:5083"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "GestionStock : démarrer",
+      "configurations": ["Déboguer l'API GestionStock"],
+      "preLaunchTask": "Frontend : démarrer"
+    }
+  ]
+}
