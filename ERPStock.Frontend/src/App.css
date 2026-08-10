@@ -196,6 +196,16 @@ button:hover:not(:disabled) {
   border-radius: 8px;
 }
 
+.form-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 9px 11px;
+  color: #425673;
+  font-size: 0.88rem;
+  background: #eef4ff;
+  border-radius: 8px;
+}
+
 .table-wrapper {
   overflow-x: auto;
   border: 1px solid var(--border);
@@ -231,6 +241,18 @@ button:hover:not(:disabled) {
   color: var(--text) !important;
   text-align: center !important;
 }
+
+.movement-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 750;
+  border-radius: 999px;
+}
+
+.movement-1 { color: #147244; background: #e6f7ec; }
+.movement-2 { color: #b03542; background: #fff0f1; }
+.movement-3 { color: #3155b5; background: #edf1ff; }
 
 @media (max-width: 640px) {
   .app-shell { padding: 24px 14px 40px; }

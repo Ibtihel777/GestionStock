@@ -24,10 +24,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IEmplacementRepository, EmplacementRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddScoped<IMouvementStockRepository, MouvementStockRepository>();
 
 builder.Services.AddScoped<ArticleService>();
 builder.Services.AddScoped<EmplacementService>();
 builder.Services.AddScoped<StockService>();
+builder.Services.AddScoped<MouvementStockService>();
 
 builder.Services.AddCors(options =>
 {
@@ -48,7 +50,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("AllowReactApp");
 
 app.UseAuthorization();

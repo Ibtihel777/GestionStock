@@ -1,9 +1,13 @@
 import ArticleList from './components/ArticleList';
 import EmplacementList from './components/EmplacementList';
+import MouvementStockList from './components/MouvementStockList';
 import StockList from './components/StockList';
+import { useRef } from 'react';
 import './App.css';
 
 function App() {
+  const stockListRef = useRef(null);
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -12,9 +16,10 @@ function App() {
         <p>Articles, emplacements et quantités au même endroit.</p>
       </header>
       <div className="dashboard">
-      <ArticleList />
+        <ArticleList />
         <EmplacementList />
-        <StockList />
+        <MouvementStockList onMovementRecorded={() => stockListRef.current?.refresh()} />
+        <StockList ref={stockListRef} />
       </div>
     </main>
   );

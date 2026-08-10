@@ -28,22 +28,4 @@ public class StockController : ControllerBase
         return stock is null ? NotFound() : Ok(stock);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateStockDto dto)
-    {
-        var stock = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = stock.Id }, stock);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] CreateStockDto dto)
-    {
-        return await _service.UpdateAsync(id, dto) ? NoContent() : NotFound();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        return await _service.DeleteAsync(id) ? NoContent() : NotFound();
-    }
 }

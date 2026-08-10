@@ -11,4 +11,5 @@ public class Article
     public DateTime DateCreation { get; set; }  
 
     public ICollection<Stock> Stocks { get; set; }
+    public ICollection<MouvementStock> MouvementsStock { get; set; }
 }
