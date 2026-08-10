@@ -23,9 +23,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IEmplacementRepository, EmplacementRepository>();
+builder.Services.AddScoped<IStockRepository, StockRepository>();
 
 builder.Services.AddScoped<ArticleService>();
 builder.Services.AddScoped<EmplacementService>();
+builder.Services.AddScoped<StockService>();
 
 builder.Services.AddCors(options =>
 {
