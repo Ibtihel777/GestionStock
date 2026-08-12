@@ -1,5 +1,5 @@
-import axios from 'axios';
+import api from './api';
 
 const API_URL = 'http://localhost:5083/api/Stock';
 
-export const getAllStocks = async () => (await axios.get(API_URL)).data;
+export const getAllStocks = async () => (await api.get(API_URL)).data;

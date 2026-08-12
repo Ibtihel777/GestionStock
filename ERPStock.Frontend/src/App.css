@@ -126,6 +126,126 @@
 
 .dashboard { display: grid; gap: 22px; }
 
+.app-navigation {
+  display: flex;
+  gap: 8px;
+  margin: -12px 0 24px;
+  padding: 6px;
+  background: #e8edfb;
+  border-radius: 11px;
+}
+
+.app-navigation button {
+  color: #566986;
+  background: transparent;
+  box-shadow: none;
+}
+
+.app-navigation button:hover:not(:disabled) { color: var(--accent); background: #f7f9ff; }
+.app-navigation button.is-active { color: var(--accent); background: #fff; box-shadow: 0 2px 6px rgba(34, 57, 110, 0.12); }
+
+.admin-dashboard { display: grid; gap: 22px; }
+
+.dashboard-intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 10px 2px 2px;
+}
+
+.dashboard-kicker {
+  margin-bottom: 5px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dashboard-intro h2 { color: var(--text-h); font-size: clamp(1.7rem, 4vw, 2.25rem); letter-spacing: -0.045em; }
+.dashboard-intro > div > p:last-child { max-width: 620px; margin-top: 7px; }
+.dashboard-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.secondary-button { color: var(--accent); background: #fff; border-color: #cfd9f2; box-shadow: none; }
+.secondary-button:hover:not(:disabled) { background: #f3f6ff; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+
+.metric-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  min-height: 132px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.metric-card > div { display: grid; gap: 3px; }
+.metric-card span:not(.metric-icon) { color: #5e6e86; font-size: 0.82rem; font-weight: 650; }
+.metric-card strong { color: var(--text-h); font-size: 2rem; line-height: 1.1; letter-spacing: -0.05em; }
+.metric-card small { color: var(--text); font-size: 0.75rem; line-height: 1.35; }
+.metric-card.is-warning { border-color: #f0d6a6; }
+.metric-card.is-danger { border-color: #f0c3c7; }
+
+.metric-icon {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.18rem;
+  font-weight: 850;
+  border-radius: 10px;
+  place-items: center;
+}
+
+.metric-icon.blue { color: #3155b5; background: #edf1ff; }
+.metric-icon.green { color: #147244; background: #e6f7ec; }
+.metric-icon.amber { color: #9b6517; background: #fff4d9; }
+.metric-icon.red { color: #b03542; background: #fff0f1; }
+
+.dashboard-panels { display: grid; grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr); gap: 22px; }
+
+.dashboard-panel {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.panel-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 19px; }
+.panel-title h3, .stock-explanation h3 { color: var(--text-h); font-size: 1.1rem; letter-spacing: -0.025em; }
+.text-button { padding: 4px 0; color: var(--accent); background: transparent; box-shadow: none; }
+.text-button:hover:not(:disabled) { background: transparent; box-shadow: none; transform: none; text-decoration: underline; }
+
+.health-badge { padding: 5px 9px; font-size: 0.73rem; font-weight: 800; white-space: nowrap; border-radius: 999px; }
+.health-badge.healthy { color: #147244; background: #e6f7ec; }
+.health-badge.needs-attention { color: #9b6517; background: #fff4d9; }
+
+.status-list { display: grid; gap: 16px; padding: 0; margin: 0; list-style: none; }
+.status-list li { display: flex; align-items: flex-start; gap: 10px; color: #4d5f78; font-size: 0.9rem; line-height: 1.45; }
+.status-dot { width: 9px; height: 9px; margin-top: 5px; border-radius: 50%; }
+.status-dot.green { background: #2faa67; box-shadow: 0 0 0 4px #e6f7ec; }
+.status-dot.amber { background: #dc9b2b; box-shadow: 0 0 0 4px #fff4d9; }
+
+.alert-preview { display: grid; }
+.alert-preview-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 11px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+.alert-preview-row:last-child { padding-bottom: 0; border-bottom: 0; }
+.alert-preview-row strong { display: block; overflow: hidden; color: var(--text-h); font-size: 0.88rem; text-overflow: ellipsis; white-space: nowrap; }
+.alert-preview-row p { margin-top: 3px; font-size: 0.8rem; }
+.alert-preview-row time { color: #71819a; font-size: 0.73rem; text-align: right; }
+.alert-preview-icon { display: grid; width: 27px; height: 27px; color: #9b6517; font-size: 0.85rem; font-weight: 850; background: #fff4d9; border-radius: 8px; place-items: center; }
+.empty-dashboard { margin: 0; padding: 16px; color: #42604f; font-size: 0.9rem; background: #eaf8ef; border-radius: 10px; }
+
+.stock-explanation { display: grid; grid-template-columns: minmax(200px, 0.55fr) 1.45fr; gap: 35px; align-items: center; }
+.checklist { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.checklist p { padding: 13px; color: #4d5f78; font-size: 0.84rem; line-height: 1.45; background: var(--surface-muted); border-radius: 10px; }
+.checklist b { display: block; margin-bottom: 3px; color: var(--accent); font-size: 1.1rem; }
+.dashboard-state { padding: 22px; color: #52647d; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+
 .entity-section {
   padding: 26px;
   background: var(--surface);
@@ -387,6 +507,16 @@ button:hover:not(:disabled) {
   .entity-section { padding: 18px; border-radius: 12px; }
   .entity-list-header { align-items: flex-start; flex-direction: column; }
   .app-header-top { align-items: flex-start; flex-direction: column; }
+  .app-navigation { margin-top: -17px; overflow-x: auto; }
+  .app-navigation button { white-space: nowrap; }
+  .dashboard-intro, .dashboard-panels, .stock-explanation { display: grid; grid-template-columns: 1fr; }
+  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .metric-card { min-height: 118px; padding: 15px; gap: 10px; }
+  .metric-card strong { font-size: 1.65rem; }
+  .metric-icon { flex-basis: 30px; width: 30px; height: 30px; }
+  .checklist { grid-template-columns: 1fr; }
+  .alert-preview-row { grid-template-columns: auto minmax(0, 1fr); }
+  .alert-preview-row time { grid-column: 2; text-align: left; }
   .entity-form { padding: 17px; }
   .entity-form form { grid-template-columns: 1fr; }
   .entity-list-header > button { width: 100%; }
