@@ -7,6 +7,7 @@ import './App.css';
 
 function App() {
   const stockListRef = useRef(null);
+  const articleListRef = useRef(null);
 
   return (
     <main className="app-shell">
@@ -16,9 +17,9 @@ function App() {
         <p>Articles, emplacements et quantités au même endroit.</p>
       </header>
       <div className="dashboard">
-        <ArticleList />
+        <ArticleList ref={articleListRef} />
         <EmplacementList />
-        <MouvementStockList onMovementRecorded={() => stockListRef.current?.refresh()} />
+        <MouvementStockList onMovementRecorded={() => { stockListRef.current?.refresh(); articleListRef.current?.refresh(); }} />
         <StockList ref={stockListRef} />
       </div>
     </main>

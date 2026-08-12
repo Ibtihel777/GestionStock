@@ -37,37 +37,68 @@ public class MouvementStockService
 
     public async Task<MouvementStockDto> CreateAsync(CreateMouvementStockDto dto)
     {
+        return dto.Type == TypeMouvementStock.Entree
+            ? await EnregistrerEntreeStockAsync(dto)
+            : await EnregistrerMouvementAsync(dto);
+    }
+
+    // Une entrée est le seul mouvement qui modifie le coût moyen de l'article.
+    // Le repository enregistre l'article suivi, le stock et le mouvement dans
+    // la même transaction.
+    public async Task<MouvementStockDto> EnregistrerEntreeStockAsync(CreateMouvementStockDto dto)
+    {
+        if (dto.Type != TypeMouvementStock.Entree)
+            throw new ArgumentException("Cette méthode est réservée aux entrées de stock.");
+
         Validate(dto);
+        var article = await GetValidatedArticleAsync(dto.ArticleId);
+        await ValidateEmplacementsAsync(dto);
 
-        var article = await _articleRepository.GetByIdAsync(dto.ArticleId);
-        if (article is null)
-            throw new ArgumentException("L'article sélectionné n'existe pas.");
+        var ancienneQuantite = await _stockRepository.GetTotalQuantityByArticleAsync(dto.ArticleId);
+        article.CMUP = CalculateCmup(
+            ancienneQuantite,
+            article.CMUP,
+            dto.Quantite,
+            dto.PrixUnitaireEntree!.Value);
 
+        return ToDto(await _repository.RecordAsync(CreateMovement(dto)));
+    }
+
+    private async Task<MouvementStockDto> EnregistrerMouvementAsync(CreateMouvementStockDto dto)
+    {
+        Validate(dto);
+        await GetValidatedArticleAsync(dto.ArticleId);
+        await ValidateEmplacementsAsync(dto);
+
+        // Une sortie ou un transfert ne modifie jamais le CMUP.
+        return ToDto(await _repository.RecordAsync(CreateMovement(dto)));
+    }
+
+    private async Task<Article> GetValidatedArticleAsync(int articleId)
+    {
+        var article = await _articleRepository.GetByIdAsync(articleId);
+        return article ?? throw new ArgumentException("L'article sélectionné n'existe pas.");
+    }
+
+    private async Task ValidateEmplacementsAsync(CreateMouvementStockDto dto)
+    {
         if (dto.EmplacementSourceId.HasValue && await _emplacementRepository.GetByIdAsync(dto.EmplacementSourceId.Value) is null)
             throw new ArgumentException("L'emplacement source sélectionné n'existe pas.");
 
         if (dto.EmplacementDestinationId.HasValue && await _emplacementRepository.GetByIdAsync(dto.EmplacementDestinationId.Value) is null)
             throw new ArgumentException("L'emplacement destination sélectionné n'existe pas.");
-
-        if (dto.Type == TypeMouvementStock.Entree)
-        {
-            var previousQuantity = await _stockRepository.GetTotalQuantityByArticleAsync(dto.ArticleId);
-            article.CMUP = CalculateCmup(previousQuantity, article.CMUP, dto.Quantite, dto.PrixUnitaireEntree!.Value);
-        }
-
-        var mouvement = new MouvementStock
-        {
-            Type = dto.Type,
-            Quantite = dto.Quantite,
-            PrixUnitaireEntree = dto.PrixUnitaireEntree,
-            ArticleId = dto.ArticleId,
-            EmplacementSourceId = dto.EmplacementSourceId,
-            EmplacementDestinationId = dto.EmplacementDestinationId,
-            DateMouvement = DateTime.UtcNow
-        };
-
-        return ToDto(await _repository.RecordAsync(mouvement));
     }
+
+    private static MouvementStock CreateMovement(CreateMouvementStockDto dto) => new()
+    {
+        Type = dto.Type,
+        Quantite = dto.Quantite,
+        PrixUnitaireEntree = dto.PrixUnitaireEntree,
+        ArticleId = dto.ArticleId,
+        EmplacementSourceId = dto.EmplacementSourceId,
+        EmplacementDestinationId = dto.EmplacementDestinationId,
+        DateMouvement = DateTime.UtcNow
+    };
 
     private static void Validate(CreateMouvementStockDto dto)
     {
