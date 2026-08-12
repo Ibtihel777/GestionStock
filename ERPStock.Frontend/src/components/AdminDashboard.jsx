@@ -34,20 +34,23 @@ function AdminDashboard({ onOpenManagement }) {
     const emptyStocks = data.stocks.filter((stock) => stock.quantite === 0).length;
     const recentAlerts = [...pending].sort((a, b) => new Date(b.dateSignalement) - new Date(a.dateSignalement)).slice(0, 5);
     const lastVerification = [...data.verifications].sort((a, b) => new Date(b.dateVerification) - new Date(a.dateVerification))[0];
-    return { pending, discrepancies, totalQuantity, emptyStocks, recentAlerts, lastVerification };
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() - (6 - index));
+      const key = date.toISOString().slice(0, 10);
+      return { label: date.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', ''), total: data.verifications.filter((item) => item.dateVerification.slice(0, 10) === key).length };
+    });
+    const maxDailyVerifications = Math.max(...days.map((day) => day.total), 1);
+    const treated = data.signalements.filter((signalement) => signalement.statut === 'Traite').length;
+    const alertTotal = pending.length + treated;
+    const treatedRatio = alertTotal ? Math.round((treated / alertTotal) * 100) : 100;
+    return { pending, discrepancies, totalQuantity, emptyStocks, recentAlerts, lastVerification, days, maxDailyVerifications, treated, treatedRatio };
   }, [data]);
 
   return (
     <section className="admin-dashboard" aria-labelledby="dashboard-title">
-      <div className="dashboard-intro">
-        <div>
-          <p className="dashboard-kicker">Vue d’ensemble</p>
-          <h2 id="dashboard-title">Situation du stock</h2>
-          <p>Suivez les quantités disponibles, les contrôles IA et les écarts nécessitant une action.</p>
-        </div>
-        <div className="dashboard-actions"><button type="button" className="secondary-button" onClick={loadDashboard} disabled={loading}>Actualiser</button><button type="button" onClick={onOpenManagement}>Gérer le stock</button></div>
-      </div>
-
+      <div className="dashboard-intro"><div><p className="dashboard-kicker">Vue d’ensemble</p><h2 id="dashboard-title">Situation du stock</h2><p>Suivez les quantités disponibles, les contrôles IA et les écarts nécessitant une action.</p></div><div className="dashboard-actions"><button type="button" className="secondary-button" onClick={loadDashboard} disabled={loading}>Actualiser</button><button type="button" onClick={onOpenManagement}>Gérer le stock</button></div></div>
       {loading && <p className="dashboard-state">Mise à jour des indicateurs…</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
       {!loading && !error && <>
@@ -58,26 +61,14 @@ function AdminDashboard({ onOpenManagement }) {
           <article className={`metric-card ${summary.discrepancies.length ? 'is-danger' : ''}`}><span className="metric-icon red">≠</span><div><span>Écarts détectés</span><strong>{summary.discrepancies.length}</strong><small>{data.verifications.length} vérifications IA réalisées</small></div></article>
         </div>
 
-        <div className="dashboard-panels">
-          <article className="dashboard-panel dashboard-status">
-            <div className="panel-title"><div><p className="dashboard-kicker">État général</p><h3>Lecture rapide</h3></div><span className={`health-badge ${summary.pending.length || summary.discrepancies.length ? 'needs-attention' : 'healthy'}`}>{summary.pending.length || summary.discrepancies.length ? 'À surveiller' : 'Conforme'}</span></div>
-            <ul className="status-list">
-              <li><span className="status-dot green" />{summary.emptyStocks === 0 ? 'Aucune ligne de stock à zéro.' : `${summary.emptyStocks} ligne${summary.emptyStocks > 1 ? 's' : ''} de stock à zéro.`}</li>
-              <li><span className={`status-dot ${summary.pending.length ? 'amber' : 'green'}`} />{summary.pending.length ? `${summary.pending.length} signalement${summary.pending.length > 1 ? 's' : ''} doit être traité.` : 'Tous les signalements sont traités.'}</li>
-              <li><span className={`status-dot ${summary.lastVerification?.ecart === 0 ? 'green' : 'amber'}`} />{summary.lastVerification ? `Dernier contrôle : ${formatDate(summary.lastVerification.dateVerification)}.` : 'Aucun contrôle IA enregistré.'}</li>
-            </ul>
-          </article>
-
-          <article className="dashboard-panel">
-            <div className="panel-title"><div><p className="dashboard-kicker">Priorités</p><h3>Dernières alertes</h3></div><button type="button" className="text-button" onClick={onOpenManagement}>Voir les alertes</button></div>
-            {summary.recentAlerts.length === 0 ? <p className="empty-dashboard">Aucune alerte en attente. Le stock est conforme aux derniers contrôles.</p> : <div className="alert-preview">{summary.recentAlerts.map((alert) => <div className="alert-preview-row" key={alert.id}><span className="alert-preview-icon">!</span><div><strong>{alert.articleReference} — {alert.articleDesignation}</strong><p>{alert.codeEmplacement} · écart de {alert.ecart > 0 ? '+' : ''}{alert.ecart}</p></div><time>{formatDate(alert.dateSignalement)}</time></div>)}</div>}
-          </article>
+        <div className="simple-charts">
+          <article className="dashboard-panel simple-chart-card"><div className="panel-title"><div><p className="dashboard-kicker">Activité IA</p><h3>Vérifications cette semaine</h3></div><span className="chart-pill blue-pill">{data.verifications.length} contrôles</span></div><div className="color-bars" role="img" aria-label="Histogramme des vérifications IA des sept derniers jours">{summary.days.map((day, index) => <div className="color-bar-column" key={`${day.label}-${index}`}><span className="color-bar-value">{day.total || ''}</span><div className="color-bar-track"><i style={{ height: `${Math.max((day.total / summary.maxDailyVerifications) * 100, day.total ? 12 : 3)}%` }} /></div><span>{day.label}</span></div>)}</div><p className="chart-helper"><i className="legend-dot blue" />Plus la barre est haute, plus de contrôles IA ont été réalisés.</p></article>
+          <article className="dashboard-panel simple-chart-card"><div className="panel-title"><div><p className="dashboard-kicker">Alertes</p><h3>Situation des signalements</h3></div><span className="chart-pill amber-pill">{summary.pending.length} à traiter</span></div><div className="alert-progress"><div className="alert-progress-title"><span>Signalements traités</span><strong>{summary.treated} / {summary.pending.length + summary.treated}</strong></div><div className="progress-track"><i className="progress-treated" style={{ width: `${summary.treatedRatio}%` }} /><i className="progress-pending" style={{ width: `${100 - summary.treatedRatio}%` }} /></div><div className="progress-labels"><span><i className="legend-dot green" />Traités : {summary.treated}</span><span><i className="legend-dot amber" />En attente : {summary.pending.length}</span></div></div><p className="chart-helper">{summary.pending.length ? 'Les alertes orange nécessitent votre attention en priorité.' : 'Excellent : aucune alerte ne nécessite votre intervention.'}</p></article>
         </div>
 
-        <article className="dashboard-panel stock-explanation">
-          <div><p className="dashboard-kicker">Comment interpréter les indicateurs ?</p><h3>Votre checklist quotidienne</h3></div>
-          <div className="checklist"><p><b>1.</b> Traitez les alertes en attente dès qu’un écart est signalé.</p><p><b>2.</b> Vérifiez les quantités à zéro avant une nouvelle sortie de stock.</p><p><b>3.</b> Consultez la gestion détaillée pour créer des articles, emplacements ou mouvements.</p></div>
-        </article>
+        <div className="dashboard-panels"><article className="dashboard-panel dashboard-status"><div className="panel-title"><div><p className="dashboard-kicker">État général</p><h3>Lecture rapide</h3></div><span className={`health-badge ${summary.pending.length || summary.discrepancies.length ? 'needs-attention' : 'healthy'}`}>{summary.pending.length || summary.discrepancies.length ? 'À surveiller' : 'Conforme'}</span></div><ul className="status-list"><li><span className="status-dot green" />{summary.emptyStocks === 0 ? 'Aucune ligne de stock à zéro.' : `${summary.emptyStocks} ligne${summary.emptyStocks > 1 ? 's' : ''} de stock à zéro.`}</li><li><span className={`status-dot ${summary.pending.length ? 'amber' : 'green'}`} />{summary.pending.length ? `${summary.pending.length} signalement${summary.pending.length > 1 ? 's' : ''} doit être traité.` : 'Tous les signalements sont traités.'}</li><li><span className={`status-dot ${summary.lastVerification?.ecart === 0 ? 'green' : 'amber'}`} />{summary.lastVerification ? `Dernier contrôle : ${formatDate(summary.lastVerification.dateVerification)}.` : 'Aucun contrôle IA enregistré.'}</li></ul></article>
+          <article className="dashboard-panel"><div className="panel-title"><div><p className="dashboard-kicker">Priorités</p><h3>Dernières alertes</h3></div><button type="button" className="text-button" onClick={onOpenManagement}>Voir les alertes</button></div>{summary.recentAlerts.length === 0 ? <p className="empty-dashboard">Aucune alerte en attente. Le stock est conforme aux derniers contrôles.</p> : <div className="alert-preview">{summary.recentAlerts.map((alert) => <div className="alert-preview-row" key={alert.id}><span className="alert-preview-icon">!</span><div><strong>{alert.articleReference} — {alert.articleDesignation}</strong><p>{alert.codeEmplacement} · écart de {alert.ecart > 0 ? '+' : ''}{alert.ecart}</p></div><time>{formatDate(alert.dateSignalement)}</time></div>)}</div>}</article></div>
+        <article className="dashboard-panel stock-explanation"><div><p className="dashboard-kicker">Comment interpréter les indicateurs ?</p><h3>Votre checklist quotidienne</h3></div><div className="checklist"><p><b>1.</b> Traitez les alertes en attente dès qu’un écart est signalé.</p><p><b>2.</b> Vérifiez les quantités à zéro avant une nouvelle sortie de stock.</p><p><b>3.</b> Consultez la gestion détaillée pour créer des articles, emplacements ou mouvements.</p></div></article>
       </>}
     </section>
   );

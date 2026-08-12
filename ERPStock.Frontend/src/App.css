@@ -246,6 +246,24 @@
 .checklist b { display: block; margin-bottom: 3px; color: var(--accent); font-size: 1.1rem; }
 .dashboard-state { padding: 22px; color: #52647d; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
 
+.simple-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.simple-chart-card { min-height: 270px; }
+.chart-pill { padding: 5px 9px; font-size: 0.74rem; font-weight: 800; white-space: nowrap; border-radius: 999px; }
+.blue-pill { color: #3155b5; background: #edf1ff; }
+.amber-pill { color: #9b6517; background: #fff4d9; }
+.color-bars { display: flex; align-items: end; justify-content: space-between; gap: 10px; height: 145px; padding: 6px 4px 0; }
+.color-bar-column { display: grid; flex: 1; align-items: end; justify-items: center; gap: 7px; min-width: 0; color: #71819a; font-size: 0.72rem; font-weight: 700; text-transform: capitalize; }
+.color-bar-value { min-height: 17px; color: #3155b5; font-size: 0.77rem; font-weight: 850; }
+.color-bar-track { display: flex; align-items: end; width: min(28px, 100%); height: 94px; background: #edf1ff; border-radius: 999px; overflow: hidden; }
+.color-bar-track i { display: block; width: 100%; min-height: 3px; background: linear-gradient(180deg, #6f88f4, #3155d5); border-radius: 999px; box-shadow: 0 3px 8px rgba(59, 91, 219, 0.28); transition: height 350ms ease; }
+.chart-helper { display: flex; align-items: center; gap: 7px; margin: 18px 0 0; color: #65758e; font-size: 0.8rem; line-height: 1.4; }
+.legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.legend-dot.blue { background: #4969df; }.legend-dot.green { background: #2faa67; }.legend-dot.amber { background: #dc9b2b; }
+.alert-progress { margin-top: 37px; }
+.alert-progress-title { display: flex; justify-content: space-between; margin-bottom: 12px; color: #596a83; font-size: 0.86rem; }.alert-progress-title strong { color: var(--text-h); }
+.progress-track { display: flex; height: 20px; overflow: hidden; background: #fff4d9; border-radius: 999px; }.progress-track i { display: block; min-width: 0; transition: width 350ms ease; }.progress-treated { background: linear-gradient(90deg, #2faa67, #66d994); }.progress-pending { background: linear-gradient(90deg, #ffd569, #e69c24); }
+.progress-labels { display: flex; justify-content: space-between; gap: 12px; margin-top: 13px; color: #5c6d84; font-size: 0.8rem; }.progress-labels span { display: inline-flex; align-items: center; gap: 6px; }
+
 .entity-section {
   padding: 26px;
   background: var(--surface);
@@ -510,6 +528,7 @@ button:hover:not(:disabled) {
   .app-navigation { margin-top: -17px; overflow-x: auto; }
   .app-navigation button { white-space: nowrap; }
   .dashboard-intro, .dashboard-panels, .stock-explanation { display: grid; grid-template-columns: 1fr; }
+  .simple-charts { grid-template-columns: 1fr; }
   .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .metric-card { min-height: 118px; padding: 15px; gap: 10px; }
   .metric-card strong { font-size: 1.65rem; }
