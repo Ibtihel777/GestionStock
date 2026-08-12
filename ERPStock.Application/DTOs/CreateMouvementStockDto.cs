@@ -6,6 +6,7 @@ public class CreateMouvementStockDto
 {
     public TypeMouvementStock Type { get; set; }
     public int Quantite { get; set; }
+    public decimal? PrixUnitaireEntree { get; set; }
     public int ArticleId { get; set; }
     public int? EmplacementSourceId { get; set; }
     public int? EmplacementDestinationId { get; set; }

@@ -8,7 +8,7 @@ const movementTypes = {
 };
 
 function MouvementStockForm({ articles, emplacements, onSaved, onCancel }) {
-  const [formData, setFormData] = useState({ type: '1', quantite: '', articleId: '', emplacementSourceId: '', emplacementDestinationId: '' });
+  const [formData, setFormData] = useState({ type: '1', quantite: '', prixUnitaireEntree: '', articleId: '', emplacementSourceId: '', emplacementDestinationId: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const canSubmit = articles.length > 0 && emplacements.length > 0;
@@ -35,6 +35,7 @@ function MouvementStockForm({ articles, emplacements, onSaved, onCancel }) {
       const mouvement = {
         type: Number(formData.type),
         quantite: Number(formData.quantite),
+        prixUnitaireEntree: isEntry ? Number(formData.prixUnitaireEntree) : null,
         articleId: Number(formData.articleId),
         emplacementSourceId: isEntry ? null : Number(formData.emplacementSourceId),
         emplacementDestinationId: isExit ? null : Number(formData.emplacementDestinationId),
@@ -59,6 +60,7 @@ function MouvementStockForm({ articles, emplacements, onSaved, onCancel }) {
         {!isEntry && <label>Emplacement source<select name="emplacementSourceId" value={formData.emplacementSourceId} onChange={handleChange} disabled={!canSubmit} required>{emplacements.map((emplacement) => <option key={emplacement.id} value={emplacement.id}>{emplacement.codeEmplacement}</option>)}</select></label>}
         {!isExit && <label>Emplacement destination<select name="emplacementDestinationId" value={formData.emplacementDestinationId} onChange={handleChange} disabled={!canSubmit} required>{emplacements.map((emplacement) => <option key={emplacement.id} value={emplacement.id}>{emplacement.codeEmplacement}</option>)}</select></label>}
         <label>Quantité<input name="quantite" type="number" min="1" step="1" value={formData.quantite} onChange={handleChange} disabled={!canSubmit} required /></label>
+        {isEntry && <label>Prix unitaire d’entrée (DT)<input name="prixUnitaireEntree" type="number" min="0.001" step="0.001" value={formData.prixUnitaireEntree} onChange={handleChange} disabled={!canSubmit} required /></label>}
         {isTransfer && <p className="form-hint">Le transfert retire la quantité de la source et l’ajoute à la destination.</p>}
         {error && <p className="form-error" role="alert">{error}</p>}
         <div className="form-actions"><button type="submit" disabled={submitting || !canSubmit}>{submitting ? 'Enregistrement...' : `Enregistrer l’${movementTypes[formData.type].toLowerCase()}`}</button><button type="button" onClick={onCancel} disabled={submitting}>Annuler</button></div>

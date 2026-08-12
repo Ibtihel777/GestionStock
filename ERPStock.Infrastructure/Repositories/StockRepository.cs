@@ -30,6 +30,13 @@ public class StockRepository : IStockRepository
             .FirstOrDefaultAsync(stock => stock.Id == id);
     }
 
+    public async Task<int> GetTotalQuantityByArticleAsync(int articleId)
+    {
+        return await _context.Stocks
+            .Where(stock => stock.ArticleId == articleId)
+            .SumAsync(stock => (int?)stock.Quantite) ?? 0;
+    }
+
     public async Task AddAsync(Stock stock)
     {
         _context.Stocks.Add(stock);

@@ -9,15 +9,18 @@ public class MouvementStockService
     private readonly IMouvementStockRepository _repository;
     private readonly IArticleRepository _articleRepository;
     private readonly IEmplacementRepository _emplacementRepository;
+    private readonly IStockRepository _stockRepository;
 
     public MouvementStockService(
         IMouvementStockRepository repository,
         IArticleRepository articleRepository,
-        IEmplacementRepository emplacementRepository)
+        IEmplacementRepository emplacementRepository,
+        IStockRepository stockRepository)
     {
         _repository = repository;
         _articleRepository = articleRepository;
         _emplacementRepository = emplacementRepository;
+        _stockRepository = stockRepository;
     }
 
     public async Task<List<MouvementStockDto>> GetAllAsync()
@@ -36,7 +39,8 @@ public class MouvementStockService
     {
         Validate(dto);
 
-        if (await _articleRepository.GetByIdAsync(dto.ArticleId) is null)
+        var article = await _articleRepository.GetByIdAsync(dto.ArticleId);
+        if (article is null)
             throw new ArgumentException("L'article sélectionné n'existe pas.");
 
         if (dto.EmplacementSourceId.HasValue && await _emplacementRepository.GetByIdAsync(dto.EmplacementSourceId.Value) is null)
@@ -45,10 +49,17 @@ public class MouvementStockService
         if (dto.EmplacementDestinationId.HasValue && await _emplacementRepository.GetByIdAsync(dto.EmplacementDestinationId.Value) is null)
             throw new ArgumentException("L'emplacement destination sélectionné n'existe pas.");
 
+        if (dto.Type == TypeMouvementStock.Entree)
+        {
+            var previousQuantity = await _stockRepository.GetTotalQuantityByArticleAsync(dto.ArticleId);
+            article.CMUP = CalculateCmup(previousQuantity, article.CMUP, dto.Quantite, dto.PrixUnitaireEntree!.Value);
+        }
+
         var mouvement = new MouvementStock
         {
             Type = dto.Type,
             Quantite = dto.Quantite,
+            PrixUnitaireEntree = dto.PrixUnitaireEntree,
             ArticleId = dto.ArticleId,
             EmplacementSourceId = dto.EmplacementSourceId,
             EmplacementDestinationId = dto.EmplacementDestinationId,
@@ -67,8 +78,12 @@ public class MouvementStockService
         {
             case TypeMouvementStock.Entree when !dto.EmplacementDestinationId.HasValue || dto.EmplacementSourceId.HasValue:
                 throw new ArgumentException("Une entrée exige uniquement un emplacement de destination.");
+            case TypeMouvementStock.Entree when !dto.PrixUnitaireEntree.HasValue || dto.PrixUnitaireEntree <= 0:
+                throw new ArgumentException("Une entrée exige un prix unitaire supérieur à zéro.");
             case TypeMouvementStock.Sortie when !dto.EmplacementSourceId.HasValue || dto.EmplacementDestinationId.HasValue:
                 throw new ArgumentException("Une sortie exige uniquement un emplacement source.");
+            case TypeMouvementStock.Sortie or TypeMouvementStock.Transfert when dto.PrixUnitaireEntree.HasValue:
+                throw new ArgumentException("Le prix unitaire est renseigné uniquement pour une entrée.");
             case TypeMouvementStock.Transfert when !dto.EmplacementSourceId.HasValue || !dto.EmplacementDestinationId.HasValue:
                 throw new ArgumentException("Un transfert exige un emplacement source et un emplacement destination.");
             case TypeMouvementStock.Transfert when dto.EmplacementSourceId == dto.EmplacementDestinationId:
@@ -78,12 +93,19 @@ public class MouvementStockService
         }
     }
 
+    private static decimal CalculateCmup(int previousQuantity, decimal previousCmup, int entryQuantity, decimal entryUnitPrice)
+    {
+        var totalQuantity = previousQuantity + entryQuantity;
+        return ((previousQuantity * previousCmup) + (entryQuantity * entryUnitPrice)) / totalQuantity;
+    }
+
     private static MouvementStockDto ToDto(MouvementStock mouvement) => new()
     {
         Id = mouvement.Id,
         Type = mouvement.Type,
         DateMouvement = mouvement.DateMouvement,
         Quantite = mouvement.Quantite,
+        PrixUnitaireEntree = mouvement.PrixUnitaireEntree,
         ArticleId = mouvement.ArticleId,
         ArticleReference = mouvement.Article.Reference,
         EmplacementSourceId = mouvement.EmplacementSourceId,

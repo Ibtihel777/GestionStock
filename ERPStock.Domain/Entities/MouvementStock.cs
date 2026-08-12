@@ -6,6 +6,7 @@ public class MouvementStock
     public TypeMouvementStock Type { get; set; }
     public DateTime DateMouvement { get; set; } = DateTime.UtcNow;
     public int Quantite { get; set; }
+    public decimal? PrixUnitaireEntree { get; set; }
 
     public int ArticleId { get; set; }
     public Article Article { get; set; } = null!;

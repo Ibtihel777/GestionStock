@@ -8,6 +8,7 @@ public class MouvementStockDto
     public TypeMouvementStock Type { get; set; }
     public DateTime DateMouvement { get; set; }
     public int Quantite { get; set; }
+    public decimal? PrixUnitaireEntree { get; set; }
     public int ArticleId { get; set; }
     public string ArticleReference { get; set; } = string.Empty;
     public int? EmplacementSourceId { get; set; }
