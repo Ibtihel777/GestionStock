@@ -9,6 +9,13 @@ const ArticleList = forwardRef(function ArticleList(_, ref) {
   const [articleToEdit, setArticleToEdit] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [actionError, setActionError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredArticles = articles.filter((article) => {
+    const search = searchTerm.trim().toLocaleLowerCase();
+    return [article.reference, article.designation, article.modeGestion]
+      .some((value) => String(value ?? '').toLocaleLowerCase().includes(search));
+  });
 
   const fetchArticles = async () => {
     try {
@@ -45,7 +52,7 @@ const ArticleList = forwardRef(function ArticleList(_, ref) {
       {actionError && <p className="form-error" role="alert">{actionError}</p>}
       {loading && <p>Chargement des articles...</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
-      {!loading && !error && <div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Mode</th><th>CMUP</th><th>Créé le</th><th>Actions</th></tr></thead><tbody>{articles.length === 0 ? <tr><td colSpan="6" className="empty-cell">Aucun article enregistré.</td></tr> : articles.map((article) => <tr key={article.id}><td>{article.reference}</td><td>{article.designation}</td><td>{article.modeGestion}</td><td>{article.cmup}</td><td>{new Date(article.dateCreation).toLocaleDateString('fr-FR')}</td><td className="table-actions"><button type="button" onClick={() => { setArticleToEdit(article); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(article)}>Supprimer</button></td></tr>)}</tbody></table></div>}
+      {!loading && !error && <><div className="table-search"><label htmlFor="articles-search">Rechercher</label><input id="articles-search" type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Référence, désignation ou mode…" /></div><div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Mode</th><th>CMUP</th><th>Créé le</th><th>Actions</th></tr></thead><tbody>{articles.length === 0 ? <tr><td colSpan="6" className="empty-cell">Aucun article enregistré.</td></tr> : filteredArticles.length === 0 ? <tr><td colSpan="6" className="empty-cell">Aucun article ne correspond à cette recherche.</td></tr> : filteredArticles.map((article) => <tr key={article.id}><td>{article.reference}</td><td>{article.designation}</td><td>{article.modeGestion}</td><td>{article.cmup}</td><td>{new Date(article.dateCreation).toLocaleDateString('fr-FR')}</td><td className="table-actions"><button type="button" onClick={() => { setArticleToEdit(article); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(article)}>Supprimer</button></td></tr>)}</tbody></table></div></>}
     </section>
   );
 });

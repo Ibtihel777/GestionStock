@@ -212,6 +212,35 @@ button:hover:not(:disabled) {
   border-radius: 10px;
 }
 
+.table-search {
+  display: grid;
+  gap: 7px;
+  width: min(360px, 100%);
+  margin: 0 0 14px;
+}
+
+.table-search label {
+  color: var(--text-h);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.table-search input {
+  width: 100%;
+  padding: 10px 11px;
+  color: var(--text-h);
+  background: #fff;
+  border: 1px solid #d6deea;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.table-search input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 91, 219, 0.14);
+}
+
 .entity-section table { width: 100%; border-collapse: collapse; }
 
 .entity-section th,

@@ -9,6 +9,13 @@ function EmplacementList() {
   const [actionError, setActionError] = useState(null);
   const [emplacementToEdit, setEmplacementToEdit] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredEmplacements = emplacements.filter((emplacement) => {
+    const search = searchTerm.trim().toLocaleLowerCase();
+    return [emplacement.codeEmplacement, emplacement.zone, emplacement.etagere, emplacement.tiroir]
+      .some((value) => String(value ?? '').toLocaleLowerCase().includes(search));
+  });
 
   const fetchEmplacements = async () => {
     try {
@@ -44,7 +51,7 @@ function EmplacementList() {
       {actionError && <p className="form-error" role="alert">{actionError}</p>}
       {loading && <p>Chargement des emplacements...</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
-      {!loading && !error && <div className="table-wrapper"><table><thead><tr><th>Code</th><th>Zone</th><th>Étagère</th><th>Tiroir</th><th>Actions</th></tr></thead><tbody>{emplacements.length === 0 ? <tr><td colSpan="5" className="empty-cell">Aucun emplacement enregistré.</td></tr> : emplacements.map((emplacement) => <tr key={emplacement.id}><td>{emplacement.codeEmplacement}</td><td>{emplacement.zone}</td><td>{emplacement.etagere}</td><td>{emplacement.tiroir}</td><td className="table-actions"><button type="button" onClick={() => { setEmplacementToEdit(emplacement); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(emplacement)}>Supprimer</button></td></tr>)}</tbody></table></div>}
+      {!loading && !error && <><div className="table-search"><label htmlFor="emplacements-search">Rechercher</label><input id="emplacements-search" type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Code, zone, étagère ou tiroir…" /></div><div className="table-wrapper"><table><thead><tr><th>Code</th><th>Zone</th><th>Étagère</th><th>Tiroir</th><th>Actions</th></tr></thead><tbody>{emplacements.length === 0 ? <tr><td colSpan="5" className="empty-cell">Aucun emplacement enregistré.</td></tr> : filteredEmplacements.length === 0 ? <tr><td colSpan="5" className="empty-cell">Aucun emplacement ne correspond à cette recherche.</td></tr> : filteredEmplacements.map((emplacement) => <tr key={emplacement.id}><td>{emplacement.codeEmplacement}</td><td>{emplacement.zone}</td><td>{emplacement.etagere}</td><td>{emplacement.tiroir}</td><td className="table-actions"><button type="button" onClick={() => { setEmplacementToEdit(emplacement); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(emplacement)}>Supprimer</button></td></tr>)}</tbody></table></div></>}
     </section>
   );
 }
