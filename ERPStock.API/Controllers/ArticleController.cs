@@ -1,11 +1,14 @@
 using ERPStock.Application.DTOs;
 using ERPStock.Application.Services;
+using ERPStock.Application.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERPStock.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = $"{AppRoles.SuperAdmin},{AppRoles.Consultant}")]
 public class ArticleController : ControllerBase
 {
     private readonly ArticleService _service;
@@ -31,6 +34,7 @@ public class ArticleController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Create([FromBody] CreateArticleDto dto)
     {
         var article = await _service.CreateAsync(dto);
@@ -38,6 +42,7 @@ public class ArticleController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Update(int id, [FromBody] CreateArticleDto dto)
     {
         var success = await _service.UpdateAsync(id, dto);
@@ -46,6 +51,7 @@ public class ArticleController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Delete(int id)
     {
         var success = await _service.DeleteAsync(id);

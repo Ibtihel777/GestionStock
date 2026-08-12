@@ -1,11 +1,14 @@
 using ERPStock.Application.DTOs;
 using ERPStock.Application.Services;
+using ERPStock.Application.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERPStock.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = $"{AppRoles.SuperAdmin},{AppRoles.Consultant}")]
 public class StockController : ControllerBase
 {
     private readonly StockService _service;

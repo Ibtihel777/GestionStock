@@ -6,7 +6,7 @@ import MouvementStockForm from './MouvementStockForm';
 
 const labels = { 1: 'Entrée', 2: 'Sortie', 3: 'Transfert' };
 
-function MouvementStockList({ onMovementRecorded }) {
+function MouvementStockList({ canManage, onMovementRecorded }) {
   const [mouvements, setMouvements] = useState([]);
   const [articles, setArticles] = useState([]);
   const [emplacements, setEmplacements] = useState([]);
@@ -32,25 +32,21 @@ function MouvementStockList({ onMovementRecorded }) {
     } catch (requestError) {
       console.error(requestError);
       setError("Impossible de charger les mouvements. Vérifiez que l'API est démarrée.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchData(); }, []);
-  const handleSaved = async () => {
-    await fetchData();
-    await onMovementRecorded?.();
-    setIsFormOpen(false);
-  };
+  const handleSaved = async () => { await fetchData(); await onMovementRecorded?.(); setIsFormOpen(false); };
 
   return (
     <section className="entity-section" aria-labelledby="mouvements-title">
-      <div className="entity-list-header"><div><h2 id="mouvements-title">Mouvements de stock</h2><p>Historique des entrées, sorties et transferts.</p></div><button type="button" onClick={() => setIsFormOpen(true)}>Nouveau mouvement</button></div>
+      <div className="entity-list-header"><div><h2 id="mouvements-title">Mouvements de stock</h2><p>Historique des entrées, sorties et transferts.</p></div>{canManage && <button type="button" onClick={() => setIsFormOpen(true)}>Nouveau mouvement</button>}</div>
       {isFormOpen && <MouvementStockForm articles={articles} emplacements={emplacements} onSaved={handleSaved} onCancel={() => setIsFormOpen(false)} />}
       {loading && <p>Chargement des mouvements...</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
-      {!loading && !error && <><div className="table-search"><label htmlFor="mouvements-search">Rechercher</label><input id="mouvements-search" type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Type, article ou emplacement…" /></div><div className="table-wrapper"><table><thead><tr><th>Date</th><th>Type</th><th>Article</th><th>Source</th><th>Destination</th><th>Quantité</th><th>Prix entrée</th></tr></thead><tbody>{mouvements.length === 0 ? <tr><td colSpan="7" className="empty-cell">Aucun mouvement enregistré.</td></tr> : filteredMouvements.length === 0 ? <tr><td colSpan="7" className="empty-cell">Aucun mouvement ne correspond à cette recherche.</td></tr> : filteredMouvements.map((mouvement) => <tr key={mouvement.id}><td>{new Date(mouvement.dateMouvement).toLocaleString('fr-FR')}</td><td><span className={`movement-badge movement-${mouvement.type}`}>{labels[mouvement.type]}</span></td><td>{mouvement.articleReference}</td><td>{mouvement.codeEmplacementSource ?? '—'}</td><td>{mouvement.codeEmplacementDestination ?? '—'}</td><td>{mouvement.quantite}</td><td>{mouvement.prixUnitaireEntree ? `${mouvement.prixUnitaireEntree} DT` : '—'}</td></tr>)}</tbody></table></div></>}
+      {!loading && !error && <><div className="table-search"><label htmlFor="mouvements-search">Rechercher</label><input id="mouvements-search" type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Type, article ou emplacement…" /></div><div className="table-wrapper"><table><thead><tr><th>Date</th><th>Type</th><th>Article</th><th>Source</th><th>Destination</th><th>Quantité</th><th>Prix entrée</th></tr></thead><tbody>
+        {mouvements.length === 0 ? <tr><td colSpan="7" className="empty-cell">Aucun mouvement enregistré.</td></tr> : filteredMouvements.length === 0 ? <tr><td colSpan="7" className="empty-cell">Aucun mouvement ne correspond à cette recherche.</td></tr> : filteredMouvements.map((mouvement) => <tr key={mouvement.id}><td>{new Date(mouvement.dateMouvement).toLocaleString('fr-FR')}</td><td><span className={`movement-badge movement-${mouvement.type}`}>{labels[mouvement.type]}</span></td><td>{mouvement.articleReference}</td><td>{mouvement.codeEmplacementSource ?? '—'}</td><td>{mouvement.codeEmplacementDestination ?? '—'}</td><td>{mouvement.quantite}</td><td>{mouvement.prixUnitaireEntree ? `${mouvement.prixUnitaireEntree} DT` : '—'}</td></tr>)}
+      </tbody></table></div></>}
     </section>
   );
 }

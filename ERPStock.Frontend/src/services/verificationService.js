@@ -1,8 +1,8 @@
-import axios from 'axios';
+import api from './api';
 
 const API_URL = 'http://localhost:5083/api/verification';
 
-export const getAllVerifications = async () => (await axios.get(API_URL)).data;
+export const getAllVerifications = async () => (await api.get(API_URL)).data;
 
 export const createVerification = async ({ articleId, emplacementId, photo }) => {
   const formData = new FormData();
@@ -10,5 +10,5 @@ export const createVerification = async ({ articleId, emplacementId, photo }) =>
   formData.append('emplacementId', emplacementId);
   formData.append('photo', photo);
 
-  return (await axios.post(API_URL, formData)).data;
+  return (await api.post(API_URL, formData)).data;
 };

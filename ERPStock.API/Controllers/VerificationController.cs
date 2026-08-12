@@ -1,12 +1,16 @@
 using ERPStock.Application.DTOs;
+using ERPStock.Application.Security;
 using ERPStock.Application.Services;
 using ERPStock.Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ERPStock.API.Controllers;
 
 [ApiController]
 [Route("api/verification")]
+[Authorize(Roles = $"{AppRoles.SuperAdmin},{AppRoles.Consultant}")]
 public class VerificationController : ControllerBase
 {
     private const long MaxPhotoSize = 10 * 1024 * 1024;
@@ -54,7 +58,10 @@ public class VerificationController : ControllerBase
                 EmplacementId = emplacementId,
                 Photo = buffer.ToArray(),
                 PhotoContentType = photo.ContentType
-            }, cancellationToken);
+            },
+            User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+            User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? "Utilisateur inconnu",
+            cancellationToken);
 
             return Created($"api/verification/{verification.Id}", verification);
         }

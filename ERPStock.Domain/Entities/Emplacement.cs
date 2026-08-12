@@ -14,4 +14,5 @@ public class Emplacement
     public ICollection<MouvementStock> MouvementsSource { get; set; }
     public ICollection<MouvementStock> MouvementsDestination { get; set; }
     public ICollection<VerificationStock> VerificationsStock { get; set; }
+    public ICollection<Signalement> Signalements { get; set; }
 }

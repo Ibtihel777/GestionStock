@@ -1,11 +1,14 @@
 using ERPStock.Application.DTOs;
 using ERPStock.Application.Services;
+using ERPStock.Application.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERPStock.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = $"{AppRoles.SuperAdmin},{AppRoles.Consultant}")]
 public class EmplacementController : ControllerBase
 {
     private readonly EmplacementService _service;
@@ -29,6 +32,7 @@ public class EmplacementController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Create([FromBody] CreateEmplacementDto dto)
     {
         var emplacement = await _service.CreateAsync(dto);
@@ -36,12 +40,14 @@ public class EmplacementController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Update(int id, [FromBody] CreateEmplacementDto dto)
     {
         return await _service.UpdateAsync(id, dto) ? NoContent() : NotFound();
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Delete(int id)
     {
         return await _service.DeleteAsync(id) ? NoContent() : NotFound();

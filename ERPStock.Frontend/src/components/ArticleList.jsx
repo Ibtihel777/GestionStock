@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { deleteArticle, getAllArticles } from '../services/articleService';
 import ArticleForm from './ArticleForm';
 
-const ArticleList = forwardRef(function ArticleList(_, ref) {
+const ArticleList = forwardRef(function ArticleList({ canManage }, ref) {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,6 +33,7 @@ const ArticleList = forwardRef(function ArticleList(_, ref) {
   useEffect(() => { fetchArticles(); }, []);
   useImperativeHandle(ref, () => ({ refresh: fetchArticles }));
   const closeForm = () => { setIsFormOpen(false); setArticleToEdit(null); };
+
   const handleDelete = async (article) => {
     if (!window.confirm(`Supprimer l’article « ${article.reference} » ?`)) return;
     try {
@@ -47,12 +48,22 @@ const ArticleList = forwardRef(function ArticleList(_, ref) {
 
   return (
     <section className="entity-section" aria-labelledby="articles-title">
-      <div className="entity-list-header"><div><h2 id="articles-title">Articles</h2><p>Références et règles de valorisation.</p></div><button type="button" onClick={() => { setArticleToEdit(null); setActionError(null); setIsFormOpen(true); }}>Nouvel article</button></div>
+      <div className="entity-list-header">
+        <div><h2 id="articles-title">Articles</h2><p>Références et règles de valorisation.</p></div>
+        {canManage && <button type="button" onClick={() => { setArticleToEdit(null); setActionError(null); setIsFormOpen(true); }}>Nouvel article</button>}
+      </div>
       {isFormOpen && <ArticleForm article={articleToEdit} onSaved={async () => { await fetchArticles(); closeForm(); }} onCancel={closeForm} />}
       {actionError && <p className="form-error" role="alert">{actionError}</p>}
       {loading && <p>Chargement des articles...</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
-      {!loading && !error && <><div className="table-search"><label htmlFor="articles-search">Rechercher</label><input id="articles-search" type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Référence, désignation ou mode…" /></div><div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Mode</th><th>CMUP</th><th>Créé le</th><th>Actions</th></tr></thead><tbody>{articles.length === 0 ? <tr><td colSpan="6" className="empty-cell">Aucun article enregistré.</td></tr> : filteredArticles.length === 0 ? <tr><td colSpan="6" className="empty-cell">Aucun article ne correspond à cette recherche.</td></tr> : filteredArticles.map((article) => <tr key={article.id}><td>{article.reference}</td><td>{article.designation}</td><td>{article.modeGestion}</td><td>{article.cmup}</td><td>{new Date(article.dateCreation).toLocaleDateString('fr-FR')}</td><td className="table-actions"><button type="button" onClick={() => { setArticleToEdit(article); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(article)}>Supprimer</button></td></tr>)}</tbody></table></div></>}
+      {!loading && !error && <>
+        <div className="table-search"><label htmlFor="articles-search">Rechercher</label><input id="articles-search" type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Référence, désignation ou mode…" /></div>
+        <div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Mode</th><th>CMUP</th><th>Créé le</th>{canManage && <th>Actions</th>}</tr></thead><tbody>
+          {articles.length === 0 ? <tr><td colSpan={canManage ? 6 : 5} className="empty-cell">Aucun article enregistré.</td></tr>
+            : filteredArticles.length === 0 ? <tr><td colSpan={canManage ? 6 : 5} className="empty-cell">Aucun article ne correspond à cette recherche.</td></tr>
+              : filteredArticles.map((article) => <tr key={article.id}><td>{article.reference}</td><td>{article.designation}</td><td>{article.modeGestion}</td><td>{article.cmup}</td><td>{new Date(article.dateCreation).toLocaleDateString('fr-FR')}</td>{canManage && <td className="table-actions"><button type="button" onClick={() => { setArticleToEdit(article); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(article)}>Supprimer</button></td>}</tr>)}
+        </tbody></table></div>
+      </>}
     </section>
   );
 });

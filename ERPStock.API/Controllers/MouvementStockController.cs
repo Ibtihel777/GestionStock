@@ -1,11 +1,14 @@
 using ERPStock.Application.DTOs;
 using ERPStock.Application.Services;
+using ERPStock.Application.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERPStock.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = $"{AppRoles.SuperAdmin},{AppRoles.Consultant}")]
 public class MouvementStockController : ControllerBase
 {
     private readonly MouvementStockService _service;
@@ -29,6 +32,7 @@ public class MouvementStockController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Create([FromBody] CreateMouvementStockDto dto)
     {
         try

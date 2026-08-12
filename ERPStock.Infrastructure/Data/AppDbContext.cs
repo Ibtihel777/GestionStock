@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using ERPStock.Domain.Entities;
 
 namespace ERPStock.Infrastructure.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<ApplicationUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -15,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<Stock> Stocks { get; set; }
     public DbSet<MouvementStock> MouvementsStock { get; set; }
     public DbSet<VerificationStock> VerificationsStock { get; set; }
+    public DbSet<Signalement> Signalements { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +50,22 @@ public class AppDbContext : DbContext
             entity.HasOne(verification => verification.Emplacement)
                 .WithMany(emplacement => emplacement.VerificationsStock)
                 .HasForeignKey(verification => verification.EmplacementId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Signalement>(entity =>
+        {
+            entity.Property(signalement => signalement.SignaleParUserId).HasMaxLength(450);
+            entity.Property(signalement => signalement.SignalePar).HasMaxLength(256);
+
+            entity.HasOne(signalement => signalement.Article)
+                .WithMany(article => article.Signalements)
+                .HasForeignKey(signalement => signalement.ArticleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(signalement => signalement.Emplacement)
+                .WithMany(emplacement => emplacement.Signalements)
+                .HasForeignKey(signalement => signalement.EmplacementId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

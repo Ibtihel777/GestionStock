@@ -11,19 +11,22 @@ public class VerificationStockService
     private readonly IEmplacementRepository _emplacementRepository;
     private readonly IStockRepository _stockRepository;
     private readonly IVisionService _visionService;
+    private readonly ISignalementRepository _signalementRepository;
 
     public VerificationStockService(
         IVerificationStockRepository verificationRepository,
         IArticleRepository articleRepository,
         IEmplacementRepository emplacementRepository,
         IStockRepository stockRepository,
-        IVisionService visionService)
+        IVisionService visionService,
+        ISignalementRepository signalementRepository)
     {
         _verificationRepository = verificationRepository;
         _articleRepository = articleRepository;
         _emplacementRepository = emplacementRepository;
         _stockRepository = stockRepository;
         _visionService = visionService;
+        _signalementRepository = signalementRepository;
     }
 
     public async Task<List<VerificationStockDto>> GetAllAsync()
@@ -34,6 +37,8 @@ public class VerificationStockService
 
     public async Task<VerificationStockDto> CreateAsync(
         CreateVerificationStockDto dto,
+        string signaleParUserId,
+        string signalePar,
         CancellationToken cancellationToken = default)
     {
         if (dto.Photo.Length == 0)
@@ -64,6 +69,20 @@ public class VerificationStockService
         };
 
         await _verificationRepository.AddAsync(verification);
+        if (verification.Ecart != 0)
+        {
+            await _signalementRepository.AddAsync(new Signalement
+            {
+                ArticleId = article.Id,
+                EmplacementId = emplacement.Id,
+                DateSignalement = verification.DateVerification,
+                QuantiteTheorique = quantiteTheorique,
+                QuantiteDetectee = quantiteDetectee,
+                Ecart = verification.Ecart,
+                SignaleParUserId = signaleParUserId,
+                SignalePar = signalePar
+            });
+        }
         verification.Article = article;
         verification.Emplacement = emplacement;
         return ToDto(verification);
