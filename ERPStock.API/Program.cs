@@ -2,6 +2,7 @@ using ERPStock.Infrastructure.Data;
 using ERPStock.Application.Interfaces;
 using ERPStock.Application.Services;
 using ERPStock.Infrastructure.Repositories;
+using ERPStock.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -25,11 +26,14 @@ builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IEmplacementRepository, EmplacementRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<IMouvementStockRepository, MouvementStockRepository>();
+builder.Services.AddScoped<IVerificationStockRepository, VerificationStockRepository>();
 
 builder.Services.AddScoped<ArticleService>();
 builder.Services.AddScoped<EmplacementService>();
 builder.Services.AddScoped<StockService>();
 builder.Services.AddScoped<MouvementStockService>();
+builder.Services.AddScoped<VerificationStockService>();
+builder.Services.AddHttpClient<IVisionService, GeminiVisionService>();
 
 builder.Services.AddCors(options =>
 {

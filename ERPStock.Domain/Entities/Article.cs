@@ -12,4 +12,5 @@ public class Article
 
     public ICollection<Stock> Stocks { get; set; }
     public ICollection<MouvementStock> MouvementsStock { get; set; }
+    public ICollection<VerificationStock> VerificationsStock { get; set; }
 }

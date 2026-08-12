@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<Emplacement> Emplacements { get; set; }
     public DbSet<Stock> Stocks { get; set; }
     public DbSet<MouvementStock> MouvementsStock { get; set; }
+    public DbSet<VerificationStock> VerificationsStock { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,6 +35,19 @@ public class AppDbContext : DbContext
             entity.HasOne(mouvement => mouvement.EmplacementDestination)
                 .WithMany(emplacement => emplacement.MouvementsDestination)
                 .HasForeignKey(mouvement => mouvement.EmplacementDestinationId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<VerificationStock>(entity =>
+        {
+            entity.HasOne(verification => verification.Article)
+                .WithMany(article => article.VerificationsStock)
+                .HasForeignKey(verification => verification.ArticleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(verification => verification.Emplacement)
+                .WithMany(emplacement => emplacement.VerificationsStock)
+                .HasForeignKey(verification => verification.EmplacementId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

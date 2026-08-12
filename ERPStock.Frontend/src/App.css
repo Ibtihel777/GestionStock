@@ -139,6 +139,8 @@ button:hover:not(:disabled) {
 
 .entity-form h2 { margin-bottom: 17px; font-size: 1.08rem; }
 
+.verification-form { margin-bottom: 18px; }
+
 .entity-form form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -205,6 +207,37 @@ button:hover:not(:disabled) {
   background: #eef4ff;
   border-radius: 8px;
 }
+
+.photo-input span {
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.verification-result {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 18px;
+  padding: 13px 15px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.verification-result.is-balanced { color: #147244; background: #e6f7ec; border-color: #bce7ca; }
+.verification-result.is-different { color: #9b6517; background: #fff7e6; border-color: #f1d59e; }
+
+.gap-value {
+  display: inline-block;
+  min-width: 40px;
+  padding: 4px 8px;
+  font-weight: 800;
+  text-align: center;
+  border-radius: 999px;
+}
+
+.gap-value.is-balanced { color: #147244; background: #e6f7ec; }
+.gap-value.is-positive { color: #3155b5; background: #edf1ff; }
+.gap-value.is-negative { color: #b03542; background: #fff0f1; }
 
 .table-wrapper {
   overflow-x: auto;

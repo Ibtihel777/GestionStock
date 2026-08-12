@@ -2,6 +2,7 @@ import ArticleList from './components/ArticleList';
 import EmplacementList from './components/EmplacementList';
 import MouvementStockList from './components/MouvementStockList';
 import StockList from './components/StockList';
+import VerificationStockList from './components/VerificationStockList';
 import { useRef } from 'react';
 import './App.css';
 
@@ -21,6 +22,7 @@ function App() {
         <EmplacementList />
         <MouvementStockList onMovementRecorded={() => { stockListRef.current?.refresh(); articleListRef.current?.refresh(); }} />
         <StockList ref={stockListRef} />
+        <VerificationStockList />
       </div>
     </main>
   );

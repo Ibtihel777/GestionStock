@@ -13,4 +13,5 @@ public class Emplacement
     public ICollection<Stock> Stocks { get; set; }
     public ICollection<MouvementStock> MouvementsSource { get; set; }
     public ICollection<MouvementStock> MouvementsDestination { get; set; }
+    public ICollection<VerificationStock> VerificationsStock { get; set; }
 }
