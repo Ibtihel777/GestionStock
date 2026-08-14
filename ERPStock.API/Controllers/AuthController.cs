@@ -7,7 +7,6 @@ using ERPStock.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ERPStock.API.Controllers;
@@ -45,12 +44,10 @@ public class AuthController : ControllerBase
         });
     }
 
-    [Authorize(Roles = AppRoles.SuperAdmin)]
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] CreateUserDto dto)
     {
-        if (dto.Role is not (AppRoles.SuperAdmin or AppRoles.Consultant))
-            return BadRequest(new { message = "Le rôle doit être SuperAdmin ou Consultant." });
         if (await _userManager.FindByEmailAsync(dto.Email) is not null)
             return Conflict(new { message = "Un compte utilise déjà cet email." });
 
@@ -59,8 +56,8 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(new { message = string.Join(" ", result.Errors.Select(error => error.Description)) });
 
-        await _userManager.AddToRoleAsync(user, dto.Role);
-        return Created(string.Empty, new { email = user.Email, role = dto.Role });
+        await _userManager.AddToRoleAsync(user, AppRoles.Consultant);
+        return Created(string.Empty, new { email = user.Email, role = AppRoles.Consultant });
     }
 
     private string CreateToken(ApplicationUser user, string role)

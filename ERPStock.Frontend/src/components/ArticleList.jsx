@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { deleteArticle, getAllArticles } from '../services/articleService';
 import ArticleForm from './ArticleForm';
+import TableRowsToggle from './TableRowsToggle';
 
 const ArticleList = forwardRef(function ArticleList({ canManage }, ref) {
   const [articles, setArticles] = useState([]);
@@ -10,17 +11,23 @@ const ArticleList = forwardRef(function ArticleList({ canManage }, ref) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAllRows, setShowAllRows] = useState(false);
 
-  const filteredArticles = articles.filter((article) => {
-    const search = searchTerm.trim().toLocaleLowerCase();
-    return [article.reference, article.designation, article.modeGestion]
-      .some((value) => String(value ?? '').toLocaleLowerCase().includes(search));
-  });
+  const filteredArticles = [...articles]
+    .sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation))
+    .filter((article) => {
+      const search = searchTerm.trim().toLocaleLowerCase();
+      return [article.reference, article.designation, article.modeGestion]
+        .some((value) => String(value ?? '').toLocaleLowerCase().includes(search));
+    });
+  const isSearching = Boolean(searchTerm.trim());
+  const displayedArticles = showAllRows || isSearching ? filteredArticles : filteredArticles.slice(0, 5);
 
   const fetchArticles = async () => {
     try {
       setLoading(true);
       setArticles(await getAllArticles());
+      setShowAllRows(false);
       setError(null);
     } catch (requestError) {
       console.error(requestError);
@@ -61,8 +68,9 @@ const ArticleList = forwardRef(function ArticleList({ canManage }, ref) {
         <div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Mode</th><th>CMUP</th><th>Créé le</th>{canManage && <th>Actions</th>}</tr></thead><tbody>
           {articles.length === 0 ? <tr><td colSpan={canManage ? 6 : 5} className="empty-cell">Aucun article enregistré.</td></tr>
             : filteredArticles.length === 0 ? <tr><td colSpan={canManage ? 6 : 5} className="empty-cell">Aucun article ne correspond à cette recherche.</td></tr>
-              : filteredArticles.map((article) => <tr key={article.id}><td>{article.reference}</td><td>{article.designation}</td><td>{article.modeGestion}</td><td>{article.cmup}</td><td>{new Date(article.dateCreation).toLocaleDateString('fr-FR')}</td>{canManage && <td className="table-actions"><button type="button" onClick={() => { setArticleToEdit(article); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(article)}>Supprimer</button></td>}</tr>)}
+              : displayedArticles.map((article) => <tr key={article.id}><td>{article.reference}</td><td>{article.designation}</td><td>{article.modeGestion}</td><td>{article.cmup}</td><td>{new Date(article.dateCreation).toLocaleDateString('fr-FR')}</td>{canManage && <td className="table-actions"><button type="button" onClick={() => { setArticleToEdit(article); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(article)}>Supprimer</button></td>}</tr>)}
         </tbody></table></div>
+        {!isSearching && filteredArticles.length > 5 && <TableRowsToggle isExpanded={showAllRows} onToggle={() => setShowAllRows((current) => !current)} />}
       </>}
     </section>
   );
