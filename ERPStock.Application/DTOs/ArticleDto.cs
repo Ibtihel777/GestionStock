@@ -7,5 +7,6 @@ public class ArticleDto
     public string Designation { get; set; }
     public string ModeGestion { get; set; }
     public decimal CMUP { get; set; }
+    public int? UnitesParCarton { get; set; }
     public DateTime DateCreation { get; set; }
 }

@@ -69,7 +69,7 @@ function LineChart({ series, labels, emptyLabel }) {
   return <div className="line-chart-wrap"><svg className="line-chart" viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label="Évolution temporelle"><line x1={padding} x2={chartWidth - padding} y1={padding} y2={padding} /><line x1={padding} x2={chartWidth - padding} y1={chartHeight / 2} y2={chartHeight / 2} /><line x1={padding} x2={chartWidth - padding} y1={chartHeight - padding} y2={chartHeight - padding} />{series.map((item, index) => <polyline key={item.label} points={pointString(item.values)} style={{ stroke: item.color ?? COLORS[index] }} />)}</svg><div className="line-chart-labels"><span>{labels[0]}</span><span>{labels[Math.floor(labels.length / 2)]}</span><span>{labels.at(-1)}</span></div><div className="line-chart-legend">{series.map((item, index) => <span key={item.label}><i style={{ background: item.color ?? COLORS[index] }} />{item.label}</span>)}</div></div>;
 }
 
-function AdminDashboard({ onOpenManagement }) {
+function AdminDashboard({ onOpenManagement, onOpenAlerts }) {
   const [data, setData] = useState({ articles: [], emplacements: [], stocks: [], signalements: [], verifications: [], mouvements: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -186,16 +186,19 @@ function AdminDashboard({ onOpenManagement }) {
 
   return (
     <section className="admin-dashboard" aria-labelledby="dashboard-title">
-      <div className="dashboard-intro"><div><p className="dashboard-kicker">Pilotage SuperAdmin</p><h2 id="dashboard-title">Analyse du stock</h2><p>Valeur, activité, alertes et articles à surveiller, réunis dans une vue opérationnelle.</p></div><div className="dashboard-actions"><button type="button" className="secondary-button" onClick={loadDashboard} disabled={loading}>Actualiser</button><button type="button" onClick={onOpenManagement}>Gérer le stock</button></div></div>
+      <div className="dashboard-intro"><div>
+      <h2 id="dashboard-title">Analyse du stock</h2>
+      </div>
+      <div className="dashboard-actions"><button type="button" className="secondary-button" onClick={loadDashboard} disabled={loading}>Actualiser</button><button type="button" onClick={onOpenManagement}>Gérer le stock</button></div></div>
       {loading && <p className="dashboard-state">Mise à jour des indicateurs…</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
       {!loading && !error && <>
         <div className="metric-grid dashboard-kpis">
           <article className="metric-card"><span className="metric-icon blue">DT</span><div><span>Valeur totale du stock</span><strong>{formatCurrency(summary.stockValue)}</strong><small>Quantité × CMUP actuel</small></div></article>
           <article className="metric-card"><span className="metric-icon green">#</span><div><span>Articles distincts en stock</span><strong>{formatNumber(summary.distinctArticles)}</strong><small>{formatNumber(summary.totalQuantity)} unités disponibles</small></div></article>
-          <article className={`metric-card ${summary.pending.length ? 'is-warning' : ''}`}><span className="metric-icon amber">!</span><div><span>Signalements en attente</span><strong>{summary.pending.length}</strong><small>Écarts IA non traités</small></div></article>
+          <button className={`metric-card metric-card-button ${summary.pending.length ? 'is-warning' : ''}`} type="button" onClick={onOpenAlerts} aria-label={`Ouvrir les ${summary.pending.length} signalements IA en attente`}><span className="metric-icon amber">!</span><div><span>Signalements en attente</span><strong>{summary.pending.length}</strong><small>Écarts IA non traités · Voir les alertes</small></div><span className="metric-card-arrow" aria-hidden="true">→</span></button>
           <article className="metric-card"><span className="metric-icon red">↔</span><div><span>Mouvements</span><strong>{summary.todayMovements} / {summary.weekMovements}</strong><small>Aujourd’hui / 7 derniers jours</small></div></article>
-          <article className="metric-card"><span className="metric-icon blue">↻</span><div><span>Taux de rotation</span><strong>{summary.rotationRate.toFixed(2)}×</strong><small>Sorties 30 j. / stock moyen estimé</small></div></article>
+          <article className="metric-card"><span className="metric-icon blue">▣</span><div><span>Total produits en stock</span><strong>{formatNumber(summary.totalQuantity)}</strong><small>Somme des quantités de tous les articles</small></div></article>
         </div>
 
         <div className="dashboard-chart-grid">

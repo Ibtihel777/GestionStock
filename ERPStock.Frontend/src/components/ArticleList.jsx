@@ -56,7 +56,7 @@ const ArticleList = forwardRef(function ArticleList({ canManage }, ref) {
   return (
     <section className="entity-section" aria-labelledby="articles-title">
       <div className="entity-list-header">
-        <div><h2 id="articles-title">Articles</h2><p>Références et règles de valorisation.</p></div>
+        <div><h2 id="articles-title">Articles</h2><p>Références, conditionnement et règles de valorisation.</p>{canManage && <span className="management-hint">Les actions de modification et de suppression sont réservées au SuperAdmin.</span>}</div>
         {canManage && <button type="button" onClick={() => { setArticleToEdit(null); setActionError(null); setIsFormOpen(true); }}>Nouvel article</button>}
       </div>
       {isFormOpen && <ArticleForm article={articleToEdit} onSaved={async () => { await fetchArticles(); closeForm(); }} onCancel={closeForm} />}
@@ -65,10 +65,10 @@ const ArticleList = forwardRef(function ArticleList({ canManage }, ref) {
       {error && <p className="form-error" role="alert">{error}</p>}
       {!loading && !error && <>
         <div className="table-search"><label htmlFor="articles-search">Rechercher</label><input id="articles-search" type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Référence, désignation ou mode…" /></div>
-        <div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Mode</th><th>CMUP</th><th>Créé le</th>{canManage && <th>Actions</th>}</tr></thead><tbody>
-          {articles.length === 0 ? <tr><td colSpan={canManage ? 6 : 5} className="empty-cell">Aucun article enregistré.</td></tr>
-            : filteredArticles.length === 0 ? <tr><td colSpan={canManage ? 6 : 5} className="empty-cell">Aucun article ne correspond à cette recherche.</td></tr>
-              : displayedArticles.map((article) => <tr key={article.id}><td>{article.reference}</td><td>{article.designation}</td><td>{article.modeGestion}</td><td>{article.cmup}</td><td>{new Date(article.dateCreation).toLocaleDateString('fr-FR')}</td>{canManage && <td className="table-actions"><button type="button" onClick={() => { setArticleToEdit(article); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(article)}>Supprimer</button></td>}</tr>)}
+        <div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Mode</th><th>CMUP</th><th>Unités/carton</th><th>Créé le</th>{canManage && <th>Actions</th>}</tr></thead><tbody>
+          {articles.length === 0 ? <tr><td colSpan={canManage ? 7 : 6} className="empty-cell">Aucun article enregistré.</td></tr>
+            : filteredArticles.length === 0 ? <tr><td colSpan={canManage ? 7 : 6} className="empty-cell">Aucun article ne correspond à cette recherche.</td></tr>
+              : displayedArticles.map((article) => <tr key={article.id}><td>{article.reference}</td><td>{article.designation}</td><td>{article.modeGestion}</td><td>{article.cmup}</td><td>{article.unitesParCarton ?? '—'}</td><td>{new Date(article.dateCreation).toLocaleDateString('fr-FR')}</td>{canManage && <td className="table-actions"><button type="button" className="edit-article-button" onClick={() => { setArticleToEdit(article); setActionError(null); setIsFormOpen(true); }} aria-label={`Modifier l'article ${article.reference}`}>Modifier</button><button type="button" className="danger-button" onClick={() => handleDelete(article)} aria-label={`Supprimer l'article ${article.reference}`}>Supprimer</button></td>}</tr>)}
         </tbody></table></div>
         {!isSearching && filteredArticles.length > 5 && <TableRowsToggle isExpanded={showAllRows} onToggle={() => setShowAllRows((current) => !current)} />}
       </>}

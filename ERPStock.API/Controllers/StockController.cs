@@ -31,4 +31,17 @@ public class StockController : ControllerBase
         return stock is null ? NotFound() : Ok(stock);
     }
 
+    [HttpPut("{id}")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
+    public async Task<IActionResult> Update(int id, [FromBody] CreateStockDto dto)
+    {
+        return await _service.UpdateAsync(id, dto) ? NoContent() : NotFound();
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        return await _service.DeleteAsync(id) ? NoContent() : NotFound();
+    }
 }

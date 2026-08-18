@@ -6,4 +6,5 @@ public class CreateArticleDto
     public string Designation { get; set; }
     public string ModeGestion { get; set; }
     public decimal CMUP { get; set; }
+    public int? UnitesParCarton { get; set; }
 }

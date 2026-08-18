@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createArticle, updateArticle } from '../services/articleService';
 
-const emptyArticle = { reference: '', designation: '', modeGestion: 'FIFO', cmup: '' };
+const emptyArticle = { reference: '', designation: '', modeGestion: 'FIFO', cmup: '', unitesParCarton: '' };
 
 function ArticleForm({ article, onSaved, onCancel }) {
   const [formData, setFormData] = useState(emptyArticle);
@@ -15,6 +15,7 @@ function ArticleForm({ article, onSaved, onCancel }) {
       designation: article.designation ?? '',
       modeGestion: article.modeGestion ?? 'FIFO',
       cmup: article.cmup ?? '',
+      unitesParCarton: article.unitesParCarton ?? '',
     } : emptyArticle);
     setError(null);
   }, [article]);
@@ -26,7 +27,11 @@ function ArticleForm({ article, onSaved, onCancel }) {
     setSubmitting(true);
     setError(null);
     try {
-      const articleData = { ...formData, cmup: Number(formData.cmup) };
+      const articleData = {
+        ...formData,
+        cmup: Number(formData.cmup),
+        unitesParCarton: formData.unitesParCarton === '' ? null : Number(formData.unitesParCarton),
+      };
       if (isEditing) await updateArticle(article.id, articleData);
       else await createArticle(articleData);
       await onSaved();
@@ -46,6 +51,7 @@ function ArticleForm({ article, onSaved, onCancel }) {
         <label>Désignation<input name="designation" value={formData.designation} onChange={handleChange} required /></label>
         <label>Mode de gestion<select name="modeGestion" value={formData.modeGestion} onChange={handleChange} required><option value="FIFO">FIFO</option><option value="LIFO">LIFO</option><option value="CMUP">CMUP</option></select></label>
         <label>CMUP<input name="cmup" type="number" min="0" step="0.01" value={formData.cmup} onChange={handleChange} required /></label>
+        <label>Unités par carton<input name="unitesParCarton" type="number" min="1" step="1" value={formData.unitesParCarton} onChange={handleChange} /></label>
         {error && <p className="form-error" role="alert">{error}</p>}
         <div className="form-actions"><button type="submit" disabled={submitting}>{submitting ? 'Enregistrement...' : isEditing ? 'Enregistrer' : 'Créer'}</button><button type="button" onClick={onCancel} disabled={submitting}>Annuler</button></div>
       </form>

@@ -58,7 +58,7 @@ function Login({ onLogin }) {
         {error && <p className="form-error" role="alert">{error}</p>}
         {success && <p className="form-success" role="status">{success}</p>}
         <button type="submit" disabled={submitting}>{submitting ? 'Veuillez patienter…' : isRegistering ? 'Créer mon compte' : 'Se connecter'}</button>
-        <button className="login-mode-button" type="button" onClick={switchMode} disabled={submitting}>{isRegistering ? 'J’ai déjà un compte' : 'Créer un compte Consultant'}</button>
+        <button className="login-mode-button" type="button" onClick={switchMode} disabled={submitting}>{isRegistering ? 'J’ai déjà un compte' : 'Créer un compte '}</button>
       </form>
     </main>
   );

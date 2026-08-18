@@ -25,6 +25,7 @@ public class ArticleService
             Designation = a.Designation,
             ModeGestion = a.ModeGestion,
             CMUP = a.CMUP,
+            UnitesParCarton = a.UnitesParCarton,
             DateCreation = a.DateCreation
         }).ToList();
     }
@@ -41,6 +42,7 @@ public class ArticleService
             Designation = article.Designation,
             ModeGestion = article.ModeGestion,
             CMUP = article.CMUP,
+            UnitesParCarton = article.UnitesParCarton,
             DateCreation = article.DateCreation
         };
     }
@@ -56,6 +58,7 @@ public class ArticleService
             Designation = dto.Designation,
             ModeGestion = dto.ModeGestion,
             CMUP = dto.CMUP,
+            UnitesParCarton = dto.UnitesParCarton,
             DateCreation = DateTime.UtcNow
         };
 
@@ -68,6 +71,7 @@ public class ArticleService
             Designation = article.Designation,
             ModeGestion = article.ModeGestion,
             CMUP = article.CMUP,
+            UnitesParCarton = article.UnitesParCarton,
             DateCreation = article.DateCreation
         };
     }
@@ -81,6 +85,7 @@ public class ArticleService
         article.Designation = dto.Designation;
         article.ModeGestion = dto.ModeGestion;
         article.CMUP = dto.CMUP;
+        article.UnitesParCarton = dto.UnitesParCarton;
 
         await _repository.UpdateAsync(article);
         return true;

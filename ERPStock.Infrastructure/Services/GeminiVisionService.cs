@@ -22,6 +22,7 @@ public class GeminiVisionService : IVisionService
         byte[] image,
         string contentType,
         string articleDesignation,
+        int? unitesParCarton,
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"]
@@ -48,7 +49,7 @@ public class GeminiVisionService : IVisionService
                 new
                 {
                     type = "text",
-                    text = $"Compte uniquement les unités visibles de l'article « {articleDesignation} » sur cette photo de stock. Ignore les articles différents, les étiquettes et les emballages vides. Réponds uniquement par un nombre entier positif ou zéro, sans texte, sans unité et sans JSON."
+                    text = BuildCountingPrompt(articleDesignation, unitesParCarton)
                 }
             }
         };
@@ -77,6 +78,11 @@ public class GeminiVisionService : IVisionService
 
         return quantity;
     }
+
+    private static string BuildCountingPrompt(string articleDesignation, int? unitesParCarton) =>
+        unitesParCarton.HasValue
+            ? $"Compte uniquement les cartons visibles de l'article « {articleDesignation} » sur cette photo de stock. Ne compte pas les unités individuelles : elles sont invisibles à l'intérieur des cartons fermés. Ignore les articles différents, les étiquettes et les emballages vides. Réponds uniquement par le nombre entier de cartons, positif ou zéro, sans texte, sans unité et sans JSON."
+            : $"Compte uniquement les unités visibles de l'article « {articleDesignation} » sur cette photo de stock. Ignore les articles différents, les étiquettes et les emballages vides. Réponds uniquement par un nombre entier positif ou zéro, sans texte, sans unité et sans JSON.";
 
     private static string GetOutputText(JsonElement response)
     {

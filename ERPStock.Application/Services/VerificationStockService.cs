@@ -52,11 +52,15 @@ public class VerificationStockService
         var quantiteTheorique = await _stockRepository.GetQuantityByArticleAndEmplacementAsync(
             dto.ArticleId,
             dto.EmplacementId);
-        var quantiteDetectee = await _visionService.CountArticlesAsync(
+        var nombreDetecteParIa = await _visionService.CountArticlesAsync(
             dto.Photo,
             dto.PhotoContentType,
             article.Designation,
+            article.UnitesParCarton,
             cancellationToken);
+        var quantiteDetectee = article.UnitesParCarton is int unitesParCarton
+            ? checked(nombreDetecteParIa * unitesParCarton)
+            : nombreDetecteParIa;
 
         var verification = new VerificationStock
         {

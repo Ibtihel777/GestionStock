@@ -24,15 +24,15 @@ public static class DashboardDemoDataSeeder
         };
         var articles = new[]
         {
-            CreateArticle("DEMO-VIS-001", "Vis inox M6", "CMUP", 0.85m, 160),
+            CreateArticle("DEMO-VIS-001", "Vis inox M6", "CMUP", 0.85m, 160, unitesParCarton: 100),
             CreateArticle("DEMO-CAB-002", "Câble industriel 5 m", "CMUP", 18.40m, 145),
             CreateArticle("DEMO-POM-003", "Pompe de circulation", "CMUP", 245m, 130),
-            CreateArticle("DEMO-ROU-004", "Roulement 6204", "CMUP", 12.75m, 115),
-            CreateArticle("DEMO-GAN-005", "Gants de protection", "CMUP", 6.20m, 95),
+            CreateArticle("DEMO-ROU-004", "Roulement 6204", "CMUP", 12.75m, 115, unitesParCarton: 20),
+            CreateArticle("DEMO-GAN-005", "Gants de protection", "CMUP", 6.20m, 95, unitesParCarton: 12),
             CreateArticle("DEMO-CAP-006", "Capteur de proximité", "CMUP", 76m, 75),
-            CreateArticle("DEMO-FIL-007", "Filtre hydraulique", "CMUP", 31.50m, 60),
+            CreateArticle("DEMO-FIL-007", "Filtre hydraulique", "CMUP", 31.50m, 60, unitesParCarton: 10),
             CreateArticle("DEMO-MOT-008", "Moteur électrique", "CMUP", 680m, 45),
-            CreateArticle("DEMO-ETI-009", "Étiquette thermique", "CMUP", 0.18m, 35)
+            CreateArticle("DEMO-ETI-009", "Étiquette thermique", "CMUP", 0.18m, 35, unitesParCarton: 100)
         };
 
         context.Emplacements.AddRange(emplacements);
@@ -92,12 +92,13 @@ public static class DashboardDemoDataSeeder
         await context.SaveChangesAsync();
     }
 
-    private static Article CreateArticle(string reference, string designation, string modeGestion, decimal cmup, int createdDaysAgo) => new()
+    private static Article CreateArticle(string reference, string designation, string modeGestion, decimal cmup, int createdDaysAgo, int? unitesParCarton = null) => new()
     {
         Reference = reference,
         Designation = designation,
         ModeGestion = modeGestion,
         CMUP = cmup,
+        UnitesParCarton = unitesParCarton,
         DateCreation = DateTime.UtcNow.AddDays(-createdDaysAgo)
     };
 
