@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build-backend:
+    build-backend:
     name: Build Backend .NET
     runs-on: ubuntu-latest
 
@@ -18,7 +18,7 @@ jobs:
       - name: Installer .NET 9
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: '9.0.x'
 
       - name: Restaurer les dépendances
         run: dotnet restore ERPStock.sln
@@ -26,7 +26,9 @@ jobs:
       - name: Compiler la solution
         run: dotnet build ERPStock.sln --no-restore --configuration Release
 
-  build-frontend:
+      - name: Lancer les tests
+        run: dotnet test ERPStock.sln --no-build --configuration Release --verbosity normal
+    build-frontend:
     name: Build Frontend React
     runs-on: ubuntu-latest
 

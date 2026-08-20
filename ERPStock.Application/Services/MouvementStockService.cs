@@ -124,7 +124,7 @@ public class MouvementStockService
         }
     }
 
-    private static decimal CalculateCmup(int previousQuantity, decimal previousCmup, int entryQuantity, decimal entryUnitPrice)
+    internal static decimal CalculateCmup(int previousQuantity, decimal previousCmup, int entryQuantity, decimal entryUnitPrice)
     {
         var totalQuantity = previousQuantity + entryQuantity;
         return ((previousQuantity * previousCmup) + (entryQuantity * entryUnitPrice)) / totalQuantity;

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPStock.Infrastructure", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPStock.API", "ERPStock.API\ERPStock.API.csproj", "{A7E55D48-6F3B-2281-ADD7-A116F46FC0B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPStock.Tests", "ERPStock.Tests\ERPStock.Tests.csproj", "{13CB4BA1-BA7E-4369-BBCC-54547FCCB55C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{A7E55D48-6F3B-2281-ADD7-A116F46FC0B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7E55D48-6F3B-2281-ADD7-A116F46FC0B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7E55D48-6F3B-2281-ADD7-A116F46FC0B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13CB4BA1-BA7E-4369-BBCC-54547FCCB55C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13CB4BA1-BA7E-4369-BBCC-54547FCCB55C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13CB4BA1-BA7E-4369-BBCC-54547FCCB55C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13CB4BA1-BA7E-4369-BBCC-54547FCCB55C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
