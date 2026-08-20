@@ -1,0 +1,48 @@
+name: CI - Build et Tests
+
+on:
+  push:
+    branches: [main, ibtihel]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-backend:
+    name: Build Backend .NET
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restaurer les dépendances
+        run: dotnet restore ERPStock.sln
+
+      - name: Compiler la solution
+        run: dotnet build ERPStock.sln --no-restore --configuration Release
+
+  build-frontend:
+    name: Build Frontend React
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Installer les dépendances
+        working-directory: ./ERPStock.Frontend
+        run: npm install
+
+      - name: Compiler le frontend
+        working-directory: ./ERPStock.Frontend
+        run: npm run build
