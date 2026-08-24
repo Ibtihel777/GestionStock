@@ -86,11 +86,17 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Les migrations doivent toujours s'exécuter, quel que soit l'environnement
+// (Development, Production, ou dans un conteneur Docker)
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await dbContext.Database.MigrateAsync();
+}
+
+// Le jeu de données de démonstration reste réservé au développement
+if (app.Environment.IsDevelopment())
+{
     await DashboardDemoDataSeeder.SeedAsync(app.Services);
 }
 

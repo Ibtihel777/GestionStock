@@ -29,4 +29,9 @@ appsettings.Production.json
 .DS_Store
 Thumbs.db
 
-ERPStock.Frontend/node_modules/ ERPStock.Frontend/dist/
+## Frontend ##
+ERPStock.Frontend/node_modules/
+ERPStock.Frontend/dist/
+
+## Docker / Secrets ##
+.env
