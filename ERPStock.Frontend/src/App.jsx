@@ -18,6 +18,7 @@ const superAdminNavigation = [
   { id: 'articles', label: 'Gestion articles', icon: '▤' },
    { id: 'familles', label: 'Gestion familles', icon: '#' },
   { id: 'depots', label: 'Gestion dépôts', icon: '⌂' },
+  { id: 'emplacements', label: 'Gestion emplacements', icon: '⌗' },
   { id: 'stock', label: 'Gestion stock', icon: '◫' },
   { id: 'mouvements', label: 'Mouvements', icon: '↔' },
   { id: 'verifications', label: 'Vérifications IA', icon: '◉' },
@@ -52,7 +53,8 @@ function App() {
       case 'dashboard': return <AdminDashboard onOpenManagement={() => setView('stock')} onOpenAlerts={() => setView('alertes')} />;
       case 'articles': return <ArticleList ref={articleListRef} canManage={isSuperAdmin} />;
       case 'familles': return <FamilleArticleList canManage={isSuperAdmin} />;
-      case 'depots': return <div className="management-view"><DepotList canManage={isSuperAdmin} /><EmplacementList canManage={isSuperAdmin} /></div>;
+      case 'depots': return <DepotList canManage={isSuperAdmin} />;
+      case 'emplacements': return <EmplacementList canManage={isSuperAdmin} />;
       case 'stock': return <StockList ref={stockListRef} canManage={isSuperAdmin} />;
       case 'mouvements': return <MouvementStockList canManage={isSuperAdmin} onMovementRecorded={() => { stockListRef.current?.refresh(); articleListRef.current?.refresh(); }} />;
       case 'verifications': return <VerificationStockList />;
@@ -63,7 +65,7 @@ function App() {
 
   return <main className="app-shell app-layout">
     <aside className="sidebar" aria-label="Navigation principale">
-      <div className="sidebar-brand"><div><strong>Gestion des stocks</strong></div></div>
+      <div className="sidebar-brand"><div><strong>StockVision</strong><small>Gestion des stock</small></div></div>
       <nav className="sidebar-navigation">{navigation.map((item) => <button key={item.id} type="button" className={view === item.id ? 'is-active' : ''} onClick={() => setView(item.id)}><span aria-hidden="true">{item.icon}</span>{item.label}</button>)}</nav>
       <div className="sidebar-footer"><span>{isSuperAdmin ? 'SuperAdmin' : 'Consultant'}</span><button className="logout-button" type="button" onClick={handleLogout}>Déconnexion</button></div>
     </aside>

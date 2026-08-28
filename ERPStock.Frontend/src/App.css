@@ -226,30 +226,30 @@
 .stock-form-context { padding: 10px 12px; color: #3d5273; font-size: 0.88rem; font-weight: 700; background: #f4f7ff; border-radius: 8px; }
 
 .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.dashboard-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.dashboard-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
 
 .metric-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  min-height: 132px;
-  padding: 20px;
+  position: relative;
+  min-height: 142px;
+  padding: 22px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: var(--shadow);
 }
 
-.metric-card > div { display: grid; gap: 3px; }
-.metric-card span:not(.metric-icon) { color: #5e6e86; font-size: 0.82rem; font-weight: 650; }
-.metric-card strong { color: var(--text-h); font-size: 2rem; line-height: 1.1; letter-spacing: -0.05em; }
-.metric-card small { color: var(--text); font-size: 0.75rem; line-height: 1.35; }
+.metric-card > div { display: grid; min-width: 0; max-width: calc(100% - 48px); gap: 5px; }
+.metric-card span:not(.metric-icon) { color: #5e6e86; font-size: 0.82rem; font-weight: 650; line-height: 1.35; }
+.metric-card strong { display: block; max-width: 100%; overflow-wrap: anywhere; color: var(--text-h); font-size: clamp(1.6rem, 2.15vw, 2rem); line-height: 1.1; letter-spacing: -0.05em; }
+.metric-card small { color: var(--text); font-size: 0.78rem; line-height: 1.4; }
 .metric-card.is-warning { border-color: #f0d6a6; }
 .metric-card.is-danger { border-color: #f0c3c7; }
 
 .metric-icon {
   display: grid;
-  flex: 0 0 36px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
   width: 36px;
   height: 36px;
   font-size: 1.18rem;
@@ -262,6 +262,10 @@
 .metric-icon.green { color: #147244; background: #e6f7ec; }
 .metric-icon.amber { color: #9b6517; background: #fff4d9; }
 .metric-icon.red { color: #b03542; background: #fff0f1; }
+
+@media (max-width: 1200px) and (min-width: 641px) {
+  .dashboard-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 .dashboard-panels { display: grid; grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr); gap: 22px; }
 
@@ -681,9 +685,9 @@ button:hover:not(:disabled) {
 .app-shell.app-layout {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
-  width: min(1680px, 100%);
+  width: 100%;
   min-height: 100vh;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
 }
 
