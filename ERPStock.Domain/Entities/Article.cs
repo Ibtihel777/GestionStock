@@ -16,6 +16,7 @@ public class Article
     public DateTime DateCreation { get; set; }  
 
     public ICollection<Stock> Stocks { get; set; } = new List<Stock>();
+    public ICollection<StockLot> LotsStock { get; set; } = new List<StockLot>();
     public ICollection<MouvementStock> MouvementsStock { get; set; } = new List<MouvementStock>();
     public ICollection<VerificationStock> VerificationsStock { get; set; } = new List<VerificationStock>();
     public ICollection<Signalement> Signalements { get; set; } = new List<Signalement>();

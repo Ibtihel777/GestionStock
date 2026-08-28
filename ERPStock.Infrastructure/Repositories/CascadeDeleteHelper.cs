@@ -13,6 +13,7 @@ internal static class CascadeDeleteHelper
         await context.Signalements.Where(item => articleIds.Contains(item.ArticleId)).ExecuteDeleteAsync();
         await context.VerificationsStock.Where(item => articleIds.Contains(item.ArticleId)).ExecuteDeleteAsync();
         await context.MouvementsStock.Where(item => articleIds.Contains(item.ArticleId)).ExecuteDeleteAsync();
+        await context.StockLots.Where(item => articleIds.Contains(item.ArticleId)).ExecuteDeleteAsync();
         await context.Stocks.Where(item => articleIds.Contains(item.ArticleId)).ExecuteDeleteAsync();
         await context.Articles.Where(item => articleIds.Contains(item.Id)).ExecuteDeleteAsync();
     }
@@ -27,6 +28,7 @@ internal static class CascadeDeleteHelper
             (item.EmplacementSourceId.HasValue && emplacementIds.Contains(item.EmplacementSourceId.Value))
             || (item.EmplacementDestinationId.HasValue && emplacementIds.Contains(item.EmplacementDestinationId.Value)))
             .ExecuteDeleteAsync();
+        await context.StockLots.Where(item => emplacementIds.Contains(item.EmplacementId)).ExecuteDeleteAsync();
         await context.Stocks.Where(item => emplacementIds.Contains(item.EmplacementId)).ExecuteDeleteAsync();
         await context.Emplacements.Where(item => emplacementIds.Contains(item.Id)).ExecuteDeleteAsync();
     }

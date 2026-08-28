@@ -6,5 +6,5 @@ public interface IMouvementStockRepository
 {
     Task<List<MouvementStock>> GetAllAsync();
     Task<MouvementStock?> GetByIdAsync(int id);
-    Task<MouvementStock> RecordAsync(MouvementStock mouvement);
+    Task<MouvementStock> RecordAsync(MouvementStock mouvement, string modeGestion, decimal cmup);
 }

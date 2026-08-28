@@ -55,23 +55,26 @@ public class MouvementStockService
         await ValidateEmplacementsAsync(dto);
 
         var ancienneQuantite = await _stockRepository.GetTotalQuantityByArticleAsync(dto.ArticleId);
-        article.CMUP = CalculateCmup(
-            ancienneQuantite,
-            article.CMUP,
-            dto.Quantite,
-            dto.PrixUnitaireEntree!.Value);
+        if (article.ModeGestion == "CMUP")
+        {
+            article.CMUP = CalculateCmup(
+                ancienneQuantite,
+                article.CMUP,
+                dto.Quantite,
+                dto.PrixUnitaireEntree!.Value);
+        }
 
-        return ToDto(await _repository.RecordAsync(CreateMovement(dto)));
+        return ToDto(await _repository.RecordAsync(CreateMovement(dto), article.ModeGestion, article.CMUP));
     }
 
     private async Task<MouvementStockDto> EnregistrerMouvementAsync(CreateMouvementStockDto dto)
     {
         Validate(dto);
-        await GetValidatedArticleAsync(dto.ArticleId);
+        var article = await GetValidatedArticleAsync(dto.ArticleId);
         await ValidateEmplacementsAsync(dto);
 
         // Une sortie ou un transfert ne modifie jamais le CMUP.
-        return ToDto(await _repository.RecordAsync(CreateMovement(dto)));
+        return ToDto(await _repository.RecordAsync(CreateMovement(dto), article.ModeGestion, article.CMUP));
     }
 
     private async Task<Article> GetValidatedArticleAsync(int articleId)
@@ -137,6 +140,7 @@ public class MouvementStockService
         DateMouvement = mouvement.DateMouvement,
         Quantite = mouvement.Quantite,
         PrixUnitaireEntree = mouvement.PrixUnitaireEntree,
+        PrixUnitaireSortie = mouvement.PrixUnitaireSortie,
         ArticleId = mouvement.ArticleId,
         ArticleReference = mouvement.Article.Reference,
         EmplacementSourceId = mouvement.EmplacementSourceId,

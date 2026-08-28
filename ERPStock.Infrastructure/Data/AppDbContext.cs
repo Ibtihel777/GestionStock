@@ -16,6 +16,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<FamilleArticle> FamillesArticles { get; set; }
     public DbSet<Emplacement> Emplacements { get; set; }
     public DbSet<Stock> Stocks { get; set; }
+    public DbSet<StockLot> StockLots { get; set; }
     public DbSet<MouvementStock> MouvementsStock { get; set; }
     public DbSet<VerificationStock> VerificationsStock { get; set; }
     public DbSet<Signalement> Signalements { get; set; }
@@ -54,6 +55,21 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(depot => depot.Emplacements)
                 .HasForeignKey(emplacement => emplacement.DepotId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StockLot>(entity =>
+        {
+            entity.HasOne(lot => lot.Article)
+                .WithMany(article => article.LotsStock)
+                .HasForeignKey(lot => lot.ArticleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(lot => lot.Emplacement)
+                .WithMany(emplacement => emplacement.LotsStock)
+                .HasForeignKey(lot => lot.EmplacementId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(lot => new { lot.ArticleId, lot.EmplacementId, lot.DateEntree });
         });
 
         modelBuilder.Entity<MouvementStock>(entity =>

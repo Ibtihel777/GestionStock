@@ -14,6 +14,7 @@ public class Emplacement
     public Depot Depot { get; set; } = null!;
 
     public ICollection<Stock> Stocks { get; set; } = new List<Stock>();
+    public ICollection<StockLot> LotsStock { get; set; } = new List<StockLot>();
     public ICollection<MouvementStock> MouvementsSource { get; set; } = new List<MouvementStock>();
     public ICollection<MouvementStock> MouvementsDestination { get; set; } = new List<MouvementStock>();
     public ICollection<VerificationStock> VerificationsStock { get; set; } = new List<VerificationStock>();

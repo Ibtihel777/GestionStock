@@ -55,6 +55,14 @@ public class ArticleRepository : IArticleRepository
             EmplacementId = emplacementId,
             Quantite = initialQuantity
         });
+        _context.StockLots.Add(new StockLot
+        {
+            Article = article,
+            EmplacementId = emplacementId,
+            QuantiteRestante = initialQuantity,
+            PrixUnitaire = article.CMUP,
+            DateEntree = DateTime.UtcNow
+        });
         _context.MouvementsStock.Add(new MouvementStock
         {
             Article = article,

@@ -1,4 +1,5 @@
 using ERPStock.Application.Interfaces;
+using ERPStock.Application.Services;
 using ERPStock.Domain.Entities;
 using ERPStock.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -27,21 +28,102 @@ public class MouvementStockRepository : IMouvementStockRepository
         return WithRelations().FirstOrDefaultAsync(mouvement => mouvement.Id == id);
     }
 
-    public async Task<MouvementStock> RecordAsync(MouvementStock mouvement)
+    public async Task<MouvementStock> RecordAsync(MouvementStock mouvement, string modeGestion, decimal cmup)
     {
+        if (modeGestion is not ("FIFO" or "LIFO" or "CMUP"))
+            throw new ArgumentException("Le mode de gestion de l'article doit etre FIFO, LIFO ou CMUP.");
+
         await using var transaction = await _context.Database.BeginTransactionAsync();
+        var lotsConsommes = new List<LotConsomme>();
 
         if (mouvement.Type is TypeMouvementStock.Sortie or TypeMouvementStock.Transfert)
+        {
+            lotsConsommes = await ConsumeLotsAsync(
+                mouvement.ArticleId,
+                mouvement.EmplacementSourceId!.Value,
+                mouvement.Quantite,
+                modeGestion,
+                cmup);
             await DecreaseStockAsync(mouvement.ArticleId, mouvement.EmplacementSourceId!.Value, mouvement.Quantite);
+            mouvement.PrixUnitaireSortie = CalculateUnitCost(lotsConsommes, mouvement.Quantite);
+        }
 
         if (mouvement.Type is TypeMouvementStock.Entree or TypeMouvementStock.Transfert)
+        {
             await IncreaseStockAsync(mouvement.ArticleId, mouvement.EmplacementDestinationId!.Value, mouvement.Quantite);
+
+            if (mouvement.Type == TypeMouvementStock.Entree)
+            {
+                _context.StockLots.Add(new StockLot
+                {
+                    ArticleId = mouvement.ArticleId,
+                    EmplacementId = mouvement.EmplacementDestinationId.Value,
+                    QuantiteRestante = mouvement.Quantite,
+                    PrixUnitaire = mouvement.PrixUnitaireEntree!.Value,
+                    DateEntree = mouvement.DateMouvement
+                });
+            }
+            else
+            {
+                foreach (var lot in lotsConsommes)
+                {
+                    _context.StockLots.Add(new StockLot
+                    {
+                        ArticleId = mouvement.ArticleId,
+                        EmplacementId = mouvement.EmplacementDestinationId.Value,
+                        QuantiteRestante = lot.Quantite,
+                        PrixUnitaire = lot.PrixUnitaire,
+                        DateEntree = lot.DateEntree
+                    });
+                }
+            }
+        }
 
         _context.MouvementsStock.Add(mouvement);
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
 
         return (await GetByIdAsync(mouvement.Id))!;
+    }
+
+    private async Task<List<LotConsomme>> ConsumeLotsAsync(
+        int articleId,
+        int emplacementId,
+        int quantity,
+        string modeGestion,
+        decimal cmup)
+    {
+        var lots = await _context.StockLots
+            .Where(lot => lot.ArticleId == articleId && lot.EmplacementId == emplacementId && lot.QuantiteRestante > 0)
+            .ToListAsync();
+        var orderedLots = StockLotCosting.OrderForConsumption(lots, modeGestion);
+
+        if (orderedLots.Sum(lot => lot.QuantiteRestante) < quantity)
+            throw new InvalidOperationException("Le stock disponible est insuffisant pour effectuer cette operation.");
+
+        var remainingQuantity = quantity;
+        var consumedLots = new List<LotConsomme>();
+        foreach (var lot in orderedLots)
+        {
+            var consumedQuantity = Math.Min(lot.QuantiteRestante, remainingQuantity);
+            lot.QuantiteRestante -= consumedQuantity;
+            remainingQuantity -= consumedQuantity;
+            consumedLots.Add(new LotConsomme(
+                consumedQuantity,
+                StockLotCosting.ResolveUnitPrice(modeGestion, cmup, lot),
+                lot.DateEntree));
+
+            if (remainingQuantity == 0)
+                break;
+        }
+
+        return consumedLots;
+    }
+
+    private static decimal CalculateUnitCost(IEnumerable<LotConsomme> lots, int totalQuantity)
+    {
+        var totalCost = lots.Sum(lot => lot.Quantite * lot.PrixUnitaire);
+        return totalCost / totalQuantity;
     }
 
     private async Task DecreaseStockAsync(int articleId, int emplacementId, int quantity)
@@ -91,4 +173,6 @@ public class MouvementStockRepository : IMouvementStockRepository
         .Include(mouvement => mouvement.Article)
         .Include(mouvement => mouvement.EmplacementSource)
         .Include(mouvement => mouvement.EmplacementDestination);
+
+    private sealed record LotConsomme(int Quantite, decimal PrixUnitaire, DateTime DateEntree);
 }

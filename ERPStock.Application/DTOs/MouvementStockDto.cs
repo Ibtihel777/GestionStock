@@ -9,6 +9,7 @@ public class MouvementStockDto
     public DateTime DateMouvement { get; set; }
     public int Quantite { get; set; }
     public decimal? PrixUnitaireEntree { get; set; }
+    public decimal? PrixUnitaireSortie { get; set; }
     public int ArticleId { get; set; }
     public string ArticleReference { get; set; } = string.Empty;
     public int? EmplacementSourceId { get; set; }

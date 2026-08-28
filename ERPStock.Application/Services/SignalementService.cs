@@ -8,13 +8,16 @@ public class SignalementService
 {
     private readonly ISignalementRepository _repository;
     private readonly IMouvementStockRepository _mouvementRepository;
+    private readonly IArticleRepository _articleRepository;
 
     public SignalementService(
         ISignalementRepository repository,
-        IMouvementStockRepository mouvementRepository)
+        IMouvementStockRepository mouvementRepository,
+        IArticleRepository articleRepository)
     {
         _repository = repository;
         _mouvementRepository = mouvementRepository;
+        _articleRepository = articleRepository;
     }
 
     public async Task<List<SignalementDto>> GetAllAsync()
@@ -43,6 +46,9 @@ public class SignalementService
         if (signalement.Ecart == 0)
             return;
 
+        var article = await _articleRepository.GetByIdAsync(signalement.ArticleId)
+            ?? throw new InvalidOperationException("L'article du signalement n'existe plus.");
+
         var mouvement = new MouvementStock
         {
             Type = signalement.Ecart > 0 ? TypeMouvementStock.Entree : TypeMouvementStock.Sortie,
@@ -50,10 +56,11 @@ public class SignalementService
             ArticleId = signalement.ArticleId,
             EmplacementSourceId = signalement.Ecart < 0 ? signalement.EmplacementId : null,
             EmplacementDestinationId = signalement.Ecart > 0 ? signalement.EmplacementId : null,
+            PrixUnitaireEntree = signalement.Ecart > 0 ? article.CMUP : null,
             DateMouvement = DateTime.UtcNow
         };
 
-        await _mouvementRepository.RecordAsync(mouvement);
+        await _mouvementRepository.RecordAsync(mouvement, article.ModeGestion, article.CMUP);
     }
 
     private static SignalementDto ToDto(Signalement signalement) => new()

@@ -30,6 +30,7 @@ public class ArticleService
 
     public async Task<ArticleDto> CreateAsync(CreateArticleDto dto)
     {
+        ValidateModeGestion(dto.ModeGestion);
         await ValidateFamilleAsync(dto.FamilleArticleId);
         await ValidateInitialStockAsync(dto);
         var article = new Article
@@ -57,6 +58,7 @@ public class ArticleService
         var article = await _repository.GetByIdAsync(id);
         if (article is null) return false;
 
+        ValidateModeGestion(dto.ModeGestion);
         await ValidateFamilleAsync(dto.FamilleArticleId);
         article.Reference = dto.Reference;
         article.Designation = dto.Designation;
@@ -94,6 +96,12 @@ public class ArticleService
             throw new ArgumentException("Sélectionnez un emplacement valide pour le stock initial.");
         if (dto.CMUP <= 0)
             throw new ArgumentException("Le CMUP doit être supérieur à zéro lorsqu'un stock initial est renseigné.");
+    }
+
+    private static void ValidateModeGestion(string modeGestion)
+    {
+        if (modeGestion is not ("FIFO" or "LIFO" or "CMUP"))
+            throw new ArgumentException("Le mode de gestion doit etre FIFO, LIFO ou CMUP.");
     }
 
     private static ArticleDto ToDto(Article article) => new()

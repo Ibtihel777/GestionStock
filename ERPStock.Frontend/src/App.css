@@ -659,6 +659,9 @@ button:hover:not(:disabled) {
 }
 
 .entity-section td { color: var(--text-h); font-size: 0.9rem; }
+.entity-section td.article-price { white-space: normal; }
+.article-price span { display: block; margin-bottom: 3px; color: #697b98; font-size: 0.7rem; font-weight: 650; line-height: 1.2; }
+.article-price strong { color: var(--text-h); font-size: 0.9rem; }
 .entity-section tbody tr { transition: background 140ms ease; }
 .entity-section tbody tr:hover { background: #fafcff; }
 .entity-section tbody tr:last-child td { border-bottom: 0; }
@@ -690,6 +693,8 @@ button:hover:not(:disabled) {
   margin: 0;
   padding: 0;
 }
+
+.entity-form .field-hint { color: #697b98; font-size: 0.74rem; font-weight: 500; line-height: 1.35; }
 
 .initial-stock-fields {
   display: grid;

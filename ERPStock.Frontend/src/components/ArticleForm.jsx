@@ -29,6 +29,9 @@ function ArticleForm({ article, onSaved, onCancel }) {
   const initialQuantity = isCartonized
     ? Number(formData.initialStockCartons || 0) * unitesParCarton
     : Number(formData.initialStockQuantity || 0);
+  const initialCostLabel = formData.modeGestion === 'CMUP'
+    ? 'Coût moyen pondéré initial (CMUP)'
+    : 'Prix du premier lot';
 
   useEffect(() => {
     setFormData(article ? {
@@ -101,7 +104,7 @@ function ArticleForm({ article, onSaved, onCancel }) {
       <label>Famille<select name="familleArticleId" value={formData.familleArticleId} onChange={handleChange} required><option value="" disabled>Sélectionnez une famille</option>{familles.map((famille) => <option key={famille.id} value={famille.id}>{famille.reference} — {famille.nom}</option>)}</select></label>
       <label>Type d'article<select name="type" value={formData.type} onChange={handleChange} required><option value="0">Standard</option><option value="1">Gamme</option></select></label>
       <label>Suivi en stock<select name="suiviStock" value={formData.suiviStock} onChange={handleChange} required><option value="0">Suivi</option><option value="1">Non suivi</option><option value="2">Lot</option></select></label>
-      <label>CMUP<input name="cmup" type="number" min="0" step="0.01" value={formData.cmup} onChange={handleChange} required /></label>
+      <label>{initialCostLabel}<input name="cmup" type="number" min="0" step="0.01" value={formData.cmup} onChange={handleChange} required /></label>
       <label>Unités par carton<input name="unitesParCarton" type="number" min="1" step="1" value={formData.unitesParCarton} onChange={handleChange} /></label>
       {!isEditing && <fieldset className="initial-stock-fields">
         <legend>Stock initial </legend>

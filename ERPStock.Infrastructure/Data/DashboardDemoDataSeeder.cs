@@ -62,6 +62,13 @@ public static class DashboardDemoDataSeeder
             Stock(articles[4], emplacements[4], 74), Stock(articles[5], emplacements[1], 3),
             Stock(articles[6], emplacements[2], 21), Stock(articles[7], emplacements[3], 2),
             Stock(articles[8], emplacements[4], 480));
+        context.StockLots.AddRange(
+            Lot(articles[0], emplacements[0], 350), Lot(articles[0], emplacements[2], 130),
+            Lot(articles[1], emplacements[2], 170), Lot(articles[1], emplacements[4], 80),
+            Lot(articles[2], emplacements[0], 9), Lot(articles[3], emplacements[3], 32),
+            Lot(articles[4], emplacements[4], 74), Lot(articles[5], emplacements[1], 3),
+            Lot(articles[6], emplacements[2], 21), Lot(articles[7], emplacements[3], 2),
+            Lot(articles[8], emplacements[4], 480));
 
         context.MouvementsStock.AddRange(
             Movement(articles[0], TypeMouvementStock.Entree, 240, 57, destination: emplacements[0], price: 0.78m),
@@ -129,6 +136,15 @@ public static class DashboardDemoDataSeeder
         Article = article,
         Emplacement = emplacement,
         Quantite = quantity
+    };
+
+    private static StockLot Lot(Article article, Emplacement emplacement, int quantity) => new()
+    {
+        Article = article,
+        Emplacement = emplacement,
+        QuantiteRestante = quantity,
+        PrixUnitaire = article.CMUP,
+        DateEntree = article.DateCreation
     };
 
     private static MouvementStock Movement(Article article, TypeMouvementStock type, int quantity, int daysAgo, Emplacement? source = null, Emplacement? destination = null, decimal? price = null) => new()
