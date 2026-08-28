@@ -63,7 +63,7 @@ function App() {
 
   return <main className="app-shell app-layout">
     <aside className="sidebar" aria-label="Navigation principale">
-      <div className="sidebar-brand"><div><strong>ERPStock</strong><small>Gestion des stocks</small></div></div>
+      <div className="sidebar-brand"><div><strong>Gestion des stocks</strong></div></div>
       <nav className="sidebar-navigation">{navigation.map((item) => <button key={item.id} type="button" className={view === item.id ? 'is-active' : ''} onClick={() => setView(item.id)}><span aria-hidden="true">{item.icon}</span>{item.label}</button>)}</nav>
       <div className="sidebar-footer"><span>{isSuperAdmin ? 'SuperAdmin' : 'Consultant'}</span><button className="logout-button" type="button" onClick={handleLogout}>Déconnexion</button></div>
     </aside>

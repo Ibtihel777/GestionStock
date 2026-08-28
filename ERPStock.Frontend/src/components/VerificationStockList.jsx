@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getAllArticles } from '../services/articleService';
 import { getAllEmplacements } from '../services/emplacementService';
+import { getAllStocks } from '../services/stockService';
 import { createVerification, getAllVerifications } from '../services/verificationService';
 import Modal from './Modal';
 import TableRowsToggle from './TableRowsToggle';
+
+const getArticleLabel = (article) => `${article.reference} — ${article.designation}`;
 
 function VerificationStockList() {
   const [verifications, setVerifications] = useState([]);
   const [articles, setArticles] = useState([]);
   const [emplacements, setEmplacements] = useState([]);
+  const [stocks, setStocks] = useState([]);
   const [formData, setFormData] = useState({ articleId: '', emplacementId: '', photo: null });
+  const [articleSearch, setArticleSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -20,17 +25,38 @@ function VerificationStockList() {
   const displayedVerifications = [...verifications]
     .sort((a, b) => new Date(b.dateVerification) - new Date(a.dateVerification));
   const visibleVerifications = showAllRows ? displayedVerifications : displayedVerifications.slice(0, 5);
+  const availableEmplacements = useMemo(() => {
+    const emplacementIds = new Set(
+      stocks
+        .filter((stock) => String(stock.articleId) === String(formData.articleId) && Number(stock.quantite) > 0)
+        .map((stock) => String(stock.emplacementId)),
+    );
+
+    return emplacements.filter((emplacement) => emplacementIds.has(String(emplacement.id)));
+  }, [emplacements, formData.articleId, stocks]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [articleData, emplacementData] = await Promise.all([getAllArticles(), getAllEmplacements()]);
+      const [articleData, emplacementData, stockData] = await Promise.all([getAllArticles(), getAllEmplacements(), getAllStocks()]);
       setArticles(articleData);
       setEmplacements(emplacementData);
+      setStocks(stockData);
       setFormData((current) => ({
         ...current,
         articleId: current.articleId || articleData[0]?.id || '',
-        emplacementId: current.emplacementId || emplacementData[0]?.id || '',
+        emplacementId: (() => {
+          const articleId = current.articleId || articleData[0]?.id;
+          const validEmplacementIds = new Set(
+            stockData
+              .filter((stock) => String(stock.articleId) === String(articleId) && Number(stock.quantite) > 0)
+              .map((stock) => String(stock.emplacementId)),
+          );
+
+          return validEmplacementIds.has(String(current.emplacementId))
+            ? current.emplacementId
+            : emplacementData.find((emplacement) => validEmplacementIds.has(String(emplacement.id)))?.id || '';
+        })(),
       }));
       setVerifications(await getAllVerifications());
       setShowAllRows(false);
@@ -44,7 +70,32 @@ function VerificationStockList() {
   };
 
   useEffect(() => { fetchData(); }, []);
-  const canSubmit = articles.length > 0 && emplacements.length > 0 && formData.photo;
+  const canSubmit = articles.length > 0 && availableEmplacements.length > 0 && formData.photo;
+
+  const handleArticleChange = (event) => {
+    const articleSearchValue = event.target.value;
+    setArticleSearch(articleSearchValue);
+    const normalizedValue = articleSearchValue.trim().toLocaleLowerCase();
+    const selectedArticle = articles.find((article) => (
+      getArticleLabel(article).toLocaleLowerCase() === normalizedValue
+      || String(article.reference).toLocaleLowerCase() === normalizedValue
+    ));
+
+    if (!selectedArticle) {
+      setFormData((current) => ({ ...current, articleId: '', emplacementId: '' }));
+      return;
+    }
+
+    const articleId = selectedArticle.id;
+    const emplacementIds = new Set(
+      stocks
+        .filter((stock) => String(stock.articleId) === String(articleId) && Number(stock.quantite) > 0)
+        .map((stock) => String(stock.emplacementId)),
+    );
+    const emplacementId = emplacements.find((emplacement) => emplacementIds.has(String(emplacement.id)))?.id || '';
+
+    setFormData((current) => ({ ...current, articleId, emplacementId }));
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -66,10 +117,10 @@ function VerificationStockList() {
   };
 
   return <section className="entity-section" aria-labelledby="verifications-title">
-    <div className="entity-list-header"><div><h2 id="verifications-title">Vérification de stock par IA</h2><p>Compare le stock visible sur une photo avec la quantité théorique.</p></div><button type="button" onClick={() => setIsFormOpen(true)}>Nouvelle vérification</button></div>
+    <div className="entity-list-header"><div><h2 id="verifications-title">Vérification de stock par IA</h2><p>Compare le stock visible sur une photo avec la quantité théorique.</p></div><button type="button" onClick={() => { const selectedArticle = articles.find((article) => String(article.id) === String(formData.articleId)); setArticleSearch(selectedArticle ? getArticleLabel(selectedArticle) : ''); setIsFormOpen(true); }}>Nouvelle vérification</button></div>
     {isFormOpen && <Modal title="Nouvelle vérification IA" onClose={() => setIsFormOpen(false)} size="wide"><form className="entity-form verification-form" onSubmit={handleSubmit}>
-      <label>Article<select value={formData.articleId} onChange={(event) => setFormData((current) => ({ ...current, articleId: event.target.value }))} disabled={loading} required>{articles.map((article) => <option key={article.id} value={article.id}>{article.reference} — {article.designation}</option>)}</select></label>
-      <label>Emplacement<select value={formData.emplacementId} onChange={(event) => setFormData((current) => ({ ...current, emplacementId: event.target.value }))} disabled={loading} required>{emplacements.map((emplacement) => <option key={emplacement.id} value={emplacement.id}>{emplacement.codeEmplacement} — Zone {emplacement.zone}, étagère {emplacement.etagere}, tiroir {emplacement.tiroir}</option>)}</select></label>
+      <label>Article<input type="search" list="verification-articles" value={articleSearch} onChange={handleArticleChange} placeholder="Référence ou désignation…" disabled={loading} required /><datalist id="verification-articles">{articles.map((article) => <option key={article.id} value={getArticleLabel(article)} />)}</datalist></label>
+      <label>Emplacement<select value={formData.emplacementId} onChange={(event) => setFormData((current) => ({ ...current, emplacementId: event.target.value }))} disabled={loading || availableEmplacements.length === 0} required>{availableEmplacements.length === 0 && <option value="">Aucun emplacement avec du stock pour cet article</option>}{availableEmplacements.map((emplacement) => <option key={emplacement.id} value={emplacement.id}>{emplacement.codeEmplacement} — Zone {emplacement.zone}, étagère {emplacement.etagere}, tiroir {emplacement.tiroir}</option>)}</select></label>
       <label className="photo-input">Photo de la zone<input type="file" accept="image/png,image/jpeg,image/webp" capture="environment" onChange={(event) => setFormData((current) => ({ ...current, photo: event.target.files[0] ?? null }))} disabled={loading} required /><span>{formData.photo?.name ?? 'JPEG, PNG ou WebP — 10 Mo maximum'}</span></label>
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="form-actions"><button type="submit" disabled={submitting || !canSubmit}>{submitting ? 'Analyse…' : 'Compter'}</button><button type="button" onClick={() => setIsFormOpen(false)} disabled={submitting}>Annuler</button></div>
