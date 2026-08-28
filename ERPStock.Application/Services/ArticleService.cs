@@ -7,98 +7,108 @@ namespace ERPStock.Application.Services;
 public class ArticleService
 {
     private readonly IArticleRepository _repository;
+    private readonly IFamilleArticleRepository _familleRepository;
+    private readonly IEmplacementRepository _emplacementRepository;
 
-    public ArticleService(IArticleRepository repository)
+    public ArticleService(
+        IArticleRepository repository,
+        IFamilleArticleRepository familleRepository,
+        IEmplacementRepository emplacementRepository)
     {
         _repository = repository;
+        _familleRepository = familleRepository;
+        _emplacementRepository = emplacementRepository;
     }
-    //GetAllAsync / GetByIdAsync : va chercher les entités via le Repository,
-    //les transforme en DTOs
-    public async Task<List<ArticleDto>> GetAllAsync()
-    {
-        var articles = await _repository.GetAllAsync();
 
-        return articles.Select(a => new ArticleDto
-        {
-            Id = a.Id,
-            Reference = a.Reference,
-            Designation = a.Designation,
-            ModeGestion = a.ModeGestion,
-            CMUP = a.CMUP,
-            UnitesParCarton = a.UnitesParCarton,
-            DateCreation = a.DateCreation
-        }).ToList();
-    }
-    
+    public async Task<List<ArticleDto>> GetAllAsync() => (await _repository.GetAllAsync()).Select(ToDto).ToList();
+
     public async Task<ArticleDto?> GetByIdAsync(int id)
     {
         var article = await _repository.GetByIdAsync(id);
-        if (article == null) return null;
-
-        return new ArticleDto
-        {
-            Id = article.Id,
-            Reference = article.Reference,
-            Designation = article.Designation,
-            ModeGestion = article.ModeGestion,
-            CMUP = article.CMUP,
-            UnitesParCarton = article.UnitesParCarton,
-            DateCreation = article.DateCreation
-        };
+        return article is null ? null : ToDto(article);
     }
-
-    //CreateAsync : transforme le DTO reçu en entité Article, fixe DateCreation
-    //automatiquement,sauvegarde
 
     public async Task<ArticleDto> CreateAsync(CreateArticleDto dto)
     {
+        await ValidateFamilleAsync(dto.FamilleArticleId);
+        await ValidateInitialStockAsync(dto);
         var article = new Article
         {
             Reference = dto.Reference,
             Designation = dto.Designation,
             ModeGestion = dto.ModeGestion,
+            FamilleArticleId = dto.FamilleArticleId,
+            Type = dto.Type,
+            SuiviStock = dto.SuiviStock,
             CMUP = dto.CMUP,
             UnitesParCarton = dto.UnitesParCarton,
             DateCreation = DateTime.UtcNow
         };
 
-        await _repository.AddAsync(article);
-
-        return new ArticleDto
-        {
-            Id = article.Id,
-            Reference = article.Reference,
-            Designation = article.Designation,
-            ModeGestion = article.ModeGestion,
-            CMUP = article.CMUP,
-            UnitesParCarton = article.UnitesParCarton,
-            DateCreation = article.DateCreation
-        };
+        if (dto.InitialStockQuantity > 0)
+            await _repository.AddWithInitialStockAsync(article, dto.InitialStockQuantity, dto.InitialStockEmplacementId!.Value);
+        else
+            await _repository.AddAsync(article);
+        return ToDto(await _repository.GetByIdAsync(article.Id) ?? article);
     }
-    //UpdateAsync : vérifie que l'article existe, met à jour ses champs
+
     public async Task<bool> UpdateAsync(int id, CreateArticleDto dto)
     {
         var article = await _repository.GetByIdAsync(id);
-        if (article == null) return false;
+        if (article is null) return false;
 
+        await ValidateFamilleAsync(dto.FamilleArticleId);
         article.Reference = dto.Reference;
         article.Designation = dto.Designation;
         article.ModeGestion = dto.ModeGestion;
+        article.FamilleArticleId = dto.FamilleArticleId;
+        article.Type = dto.Type;
+        article.SuiviStock = dto.SuiviStock;
         article.CMUP = dto.CMUP;
         article.UnitesParCarton = dto.UnitesParCarton;
 
         await _repository.UpdateAsync(article);
         return true;
     }
-    //DeleteAsync : vérifie que l'article existe avant de le supprimer
-    //(évite une erreur si l'id n'existe pas)
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var article = await _repository.GetByIdAsync(id);
-        if (article == null) return false;
-
+        if (await _repository.GetByIdAsync(id) is null) return false;
         await _repository.DeleteAsync(id);
         return true;
     }
+
+    private async Task ValidateFamilleAsync(int familleArticleId)
+    {
+        if (familleArticleId <= 0 || await _familleRepository.GetByIdAsync(familleArticleId) is null)
+            throw new ArgumentException("La famille sélectionnée n'existe pas.");
+    }
+
+    private async Task ValidateInitialStockAsync(CreateArticleDto dto)
+    {
+        if (dto.InitialStockQuantity < 0)
+            throw new ArgumentException("La quantité initiale ne peut pas être négative.");
+        if (dto.InitialStockQuantity == 0) return;
+        if (!dto.InitialStockEmplacementId.HasValue
+            || await _emplacementRepository.GetByIdAsync(dto.InitialStockEmplacementId.Value) is null)
+            throw new ArgumentException("Sélectionnez un emplacement valide pour le stock initial.");
+        if (dto.CMUP <= 0)
+            throw new ArgumentException("Le CMUP doit être supérieur à zéro lorsqu'un stock initial est renseigné.");
+    }
+
+    private static ArticleDto ToDto(Article article) => new()
+    {
+        Id = article.Id,
+        Reference = article.Reference,
+        Designation = article.Designation,
+        ModeGestion = article.ModeGestion,
+        FamilleArticleId = article.FamilleArticleId,
+        FamilleReference = article.FamilleArticle?.Reference ?? string.Empty,
+        FamilleNom = article.FamilleArticle?.Nom ?? string.Empty,
+        Type = article.Type,
+        SuiviStock = article.SuiviStock,
+        CMUP = article.CMUP,
+        UnitesParCarton = article.UnitesParCarton,
+        DateCreation = article.DateCreation
+    };
 }

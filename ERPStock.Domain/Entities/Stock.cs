@@ -6,8 +6,8 @@ public class Stock
     public int Quantite { get; set; }
 
     public int ArticleId { get; set; }
-    public Article Article { get; set; }
+    public Article Article { get; set; } = null!;
 
     public int EmplacementId { get; set; }
-    public Emplacement Emplacement { get; set; }
+    public Emplacement Emplacement { get; set; } = null!;
 }

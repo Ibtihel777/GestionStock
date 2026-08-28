@@ -14,6 +14,11 @@ public static class DashboardDemoDataSeeder
         if (await context.Articles.AnyAsync(article => article.Reference.StartsWith("DEMO-")))
             return;
 
+        var depot = new Depot { Reference = "DEMO-PRINCIPAL", Nom = "Dépôt principal" };
+        var famille = new FamilleArticle { Reference = "DEMO-GENERAL", Nom = "Articles de démonstration" };
+        depot.Reference = "DEP-900";
+        famille.Reference = "FAM-900";
+
         var emplacements = new[]
         {
             new Emplacement { Zone = "Atelier", Etagere = "A1", Tiroir = "01", Code_Emplacement = "ATELIER-A1-01" },
@@ -35,6 +40,17 @@ public static class DashboardDemoDataSeeder
             CreateArticle("DEMO-ETI-009", "Étiquette thermique", "CMUP", 0.18m, 35, unitesParCarton: 100)
         };
 
+        foreach (var emplacement in emplacements)
+            emplacement.Depot = depot;
+        foreach (var article in articles)
+        {
+            article.FamilleArticle = famille;
+            article.Type = TypeArticle.Standard;
+            article.SuiviStock = ModeSuiviStock.Suivi;
+        }
+
+        context.Depots.Add(depot);
+        context.FamillesArticles.Add(famille);
         context.Emplacements.AddRange(emplacements);
         context.Articles.AddRange(articles);
         await context.SaveChangesAsync();
@@ -89,6 +105,12 @@ public static class DashboardDemoDataSeeder
             Signalement(articles[2], emplacements[0], 9, 8, 4, StatutSignalement.EnAttente),
             Signalement(articles[4], emplacements[4], 74, 71, 1, StatutSignalement.EnAttente));
 
+        await context.SaveChangesAsync();
+
+        // Les vérifications et signalements servent uniquement à l'exécution IA :
+        // le jeu de démonstration démarre volontairement sans historique d'alertes.
+        context.Signalements.RemoveRange(context.Signalements);
+        context.VerificationsStock.RemoveRange(context.VerificationsStock);
         await context.SaveChangesAsync();
     }
 

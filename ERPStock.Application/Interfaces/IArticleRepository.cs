@@ -13,6 +13,7 @@ public interface IArticleRepository
     Task<List<Article>> GetAllAsync();
     Task<Article?> GetByIdAsync(int id);
     Task AddAsync(Article article);
+    Task AddWithInitialStockAsync(Article article, int initialQuantity, int emplacementId);
     Task UpdateAsync(Article article);
     Task DeleteAsync(int id);
 }

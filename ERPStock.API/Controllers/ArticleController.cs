@@ -37,17 +37,31 @@ public class ArticleController : ControllerBase
     [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Create([FromBody] CreateArticleDto dto)
     {
-        var article = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = article.Id }, article);
+        try
+        {
+            var article = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = article.Id }, article);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
     }
 
     [HttpPut("{id}")]
     [Authorize(Roles = AppRoles.SuperAdmin)]
     public async Task<IActionResult> Update(int id, [FromBody] CreateArticleDto dto)
     {
-        var success = await _service.UpdateAsync(id, dto);
-        if (!success) return NotFound();
-        return NoContent();
+        try
+        {
+            var success = await _service.UpdateAsync(id, dto);
+            if (!success) return NotFound();
+            return NoContent();
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
     }
 
     [HttpDelete("{id}")]

@@ -12,6 +12,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<Article> Articles { get; set; }
+    public DbSet<Depot> Depots { get; set; }
+    public DbSet<FamilleArticle> FamillesArticles { get; set; }
     public DbSet<Emplacement> Emplacements { get; set; }
     public DbSet<Stock> Stocks { get; set; }
     public DbSet<MouvementStock> MouvementsStock { get; set; }
@@ -21,6 +23,38 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Depot>(entity =>
+        {
+            entity.HasOne(depot => depot.DepotParent)
+                .WithMany(depot => depot.DepotsEnfants)
+                .HasForeignKey(depot => depot.DepotParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<FamilleArticle>(entity =>
+        {
+            entity.HasOne(famille => famille.FamilleParent)
+                .WithMany(famille => famille.FamillesEnfants)
+                .HasForeignKey(famille => famille.FamilleParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Article>(entity =>
+        {
+            entity.HasOne(article => article.FamilleArticle)
+                .WithMany(famille => famille.Articles)
+                .HasForeignKey(article => article.FamilleArticleId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Emplacement>(entity =>
+        {
+            entity.HasOne(emplacement => emplacement.Depot)
+                .WithMany(depot => depot.Emplacements)
+                .HasForeignKey(emplacement => emplacement.DepotId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<MouvementStock>(entity =>
         {

@@ -16,12 +16,13 @@ public class EmplacementRepository : IEmplacementRepository
 
     public async Task<List<Emplacement>> GetAllAsync()
     {
-        return await _context.Emplacements.ToListAsync();
+        return await _context.Emplacements.Include(emplacement => emplacement.Depot).ToListAsync();
     }
 
     public async Task<Emplacement?> GetByIdAsync(int id)
     {
-        return await _context.Emplacements.FindAsync(id);
+        return await _context.Emplacements.Include(emplacement => emplacement.Depot)
+            .FirstOrDefaultAsync(emplacement => emplacement.Id == id);
     }
 
     public async Task AddAsync(Emplacement emplacement)
@@ -38,11 +39,8 @@ public class EmplacementRepository : IEmplacementRepository
 
     public async Task DeleteAsync(int id)
     {
-        var emplacement = await _context.Emplacements.FindAsync(id);
-        if (emplacement is not null)
-        {
-            _context.Emplacements.Remove(emplacement);
-            await _context.SaveChangesAsync();
-        }
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        await CascadeDeleteHelper.DeleteEmplacementsAsync(_context, [id]);
+        await transaction.CommitAsync();
     }
 }

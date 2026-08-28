@@ -187,9 +187,8 @@ function AdminDashboard({ onOpenManagement, onOpenAlerts }) {
   return (
     <section className="admin-dashboard" aria-labelledby="dashboard-title">
       <div className="dashboard-intro"><div>
-      <h2 id="dashboard-title">Analyse du stock</h2>
       </div>
-      <div className="dashboard-actions"><button type="button" className="secondary-button" onClick={loadDashboard} disabled={loading}>Actualiser</button><button type="button" onClick={onOpenManagement}>Gérer le stock</button></div></div>
+      <div className="dashboard-actions"><button type="button" className="secondary-button" onClick={loadDashboard} disabled={loading}>Actualiser</button></div></div>
       {loading && <p className="dashboard-state">Mise à jour des indicateurs…</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
       {!loading && !error && <>
@@ -215,8 +214,7 @@ function AdminDashboard({ onOpenManagement, onOpenAlerts }) {
 
         
 
-        <div className="dashboard-panels">
-          <article className="dashboard-panel"><div className="panel-title"><div><p className="dashboard-kicker">Stock dormant</p><h3>Sans mouvement depuis {INACTIVE_DAYS} jours</h3></div></div>{summary.inactiveArticles.length === 0 ? <p className="empty-dashboard">Tous les articles en stock ont eu une activité récente.</p> : <ul className="watch-list">{summary.inactiveArticles.slice(0, 5).map((item) => <li key={item.id}><span>{item.label}</span><strong>{item.lastMovement ? formatDate(item.lastMovement) : 'Jamais mouvementé'}</strong></li>)}</ul>}</article></div>
+        
       </>}
     </section>
   );

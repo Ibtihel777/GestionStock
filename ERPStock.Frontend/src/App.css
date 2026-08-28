@@ -677,6 +677,110 @@ button:hover:not(:disabled) {
 .movement-2 { color: #b03542; background: #fff0f1; }
 .movement-3 { color: #3155b5; background: #edf1ff; }
 
+/* Application shell with persistent sidebar navigation. */
+.app-shell.app-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  width: min(1680px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.initial-stock-fields {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #cfdaf0;
+  border-radius: 10px;
+}
+
+.initial-stock-fields legend {
+  padding: 0 6px;
+  color: var(--text-h);
+  font-size: 0.94rem;
+  font-weight: 750;
+}
+
+.initial-stock-fields legend small { color: #697b98; font-weight: 500; }
+.initial-stock-fields .form-hint,
+.initial-stock-fields .initial-stock-total { grid-column: 1 / -1; margin: 0; }
+.initial-stock-total { color: #2d4f87; font-size: 0.88rem; }
+
+.modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(19, 32, 58, 0.35);
+  backdrop-filter: blur(7px);
+  animation: modal-fade-in 160ms ease-out;
+}
+
+.modal-dialog {
+  width: min(720px, 100%);
+  max-height: min(86vh, 900px);
+  overflow: auto;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(15, 30, 62, 0.3);
+  animation: modal-slide-in 180ms ease-out;
+}
+
+.modal-dialog--small { width: min(490px, 100%); }
+.modal-dialog--wide { width: min(920px, 100%); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.modal-header h2 { margin: 0; color: var(--text-h); font-size: 1.2rem; }
+.modal-close { width: 34px; min-width: 34px; height: 34px; padding: 0; color: #485873; font-size: 1.55rem; line-height: 1; background: #eef2f8; border-radius: 50%; box-shadow: none; }
+.modal-close:hover:not(:disabled) { color: #1b2d4f; background: #e1e8f3; }
+.modal-dialog .entity-form { margin: 0; padding: 0; background: transparent; border: 0; }
+.modal-dialog .entity-form h2 { display: none; }
+.delete-confirmation { display: grid; gap: 14px; color: #3e4f6e; }
+.delete-confirmation p { margin: 0; }
+.delete-warning { padding: 12px; color: #8f2935; background: #fff0f1; border-radius: 8px; }
+
+@keyframes modal-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-slide-in { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 26px 16px 20px;
+  color: #dfe7ff;
+  background: linear-gradient(180deg, #172a5e 0%, #263f85 100%);
+  box-shadow: 8px 0 28px rgba(24, 44, 99, 0.13);
+}
+
+.sidebar-brand { display: flex; align-items: center; gap: 11px; padding: 0 10px 30px; }
+.sidebar-brand strong { display: block; color: #fff; font-size: 1.05rem; letter-spacing: -0.02em; }
+.sidebar-brand small { display: block; margin-top: 2px; color: #afc0ef; font-size: 0.72rem; }
+.sidebar-logo { display: grid; width: 38px; height: 38px; color: #294582; font-size: 0.78rem; font-weight: 850; background: #fff; border-radius: 11px; place-items: center; }
+.sidebar-navigation { display: grid; gap: 5px; }
+.sidebar-navigation button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 11px 12px; color: #d8e2ff; font-size: 0.88rem; font-weight: 680; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 9px; box-shadow: none; }
+.sidebar-navigation button > span { display: grid; width: 20px; height: 20px; font-size: 1rem; place-items: center; }
+.sidebar-navigation button:hover:not(:disabled) { color: #fff; background: rgba(255, 255, 255, 0.09); }
+.sidebar-navigation button.is-active { color: #244487; background: #fff; border-color: rgba(255, 255, 255, 0.55); box-shadow: 0 7px 16px rgba(10, 24, 67, 0.18); }
+.sidebar-footer { display: grid; gap: 7px; margin-top: auto; padding: 18px 10px 0; border-top: 1px solid rgba(255, 255, 255, 0.16); }
+.sidebar-footer p { overflow: hidden; color: #dce5fc; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-footer span { width: fit-content; padding: 3px 7px; color: #d9e5ff; font-size: 0.69rem; font-weight: 750; background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
+.sidebar-footer .logout-button { width: 100%; margin-top: 5px; color: #fff; background: rgba(255, 255, 255, 0.1); }
+
+.app-content { min-width: 0; padding: 42px clamp(20px, 4vw, 56px) 64px; }
+.content-header { display: flex; align-items: center; min-height: 62px; margin-bottom: 25px; }
+.content-header h1 { margin: 3px 0 0; color: var(--text-h); font-size: clamp(1.65rem, 3vw, 2.25rem); letter-spacing: -0.045em; }
+.eyebrow { color: var(--accent); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.11em; text-transform: uppercase; }
+.management-view { display: grid; gap: 22px; }
+
 @media (max-width: 640px) {
   .app-shell { padding: 24px 14px 40px; }
   .app-header { padding: 28px 24px; border-radius: 16px; }
@@ -700,5 +804,17 @@ button:hover:not(:disabled) {
   .alert-preview-row time { grid-column: 2; text-align: left; }
   .entity-form { padding: 17px; }
   .entity-form form { grid-template-columns: 1fr; }
+  .initial-stock-fields { grid-template-columns: 1fr; }
   .entity-list-header > button { width: 100%; }
+}
+
+@media (max-width: 850px) {
+  .app-shell.app-layout { display: block; }
+  .sidebar { position: static; min-height: auto; padding: 16px; }
+  .sidebar-brand { padding: 0 5px 13px; }
+  .sidebar-navigation { display: flex; overflow-x: auto; padding-bottom: 2px; }
+  .sidebar-navigation button { flex: 0 0 auto; width: auto; white-space: nowrap; }
+  .sidebar-footer { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 5px 0; }
+  .sidebar-footer .logout-button { width: auto; margin: 0 0 0 auto; }
+  .app-content { padding: 28px 18px 48px; }
 }

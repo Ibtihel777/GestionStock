@@ -16,12 +16,13 @@ public class ArticleRepository : IArticleRepository
 
     public async Task<List<Article>> GetAllAsync()
     {
-        return await _context.Articles.ToListAsync();
+        return await _context.Articles.Include(article => article.FamilleArticle).ToListAsync();
     }
 
     public async Task<Article?> GetByIdAsync(int id)
     {
-        return await _context.Articles.FindAsync(id);
+        return await _context.Articles.Include(article => article.FamilleArticle)
+            .FirstOrDefaultAsync(article => article.Id == id);
     }
 
     public async Task AddAsync(Article article)
@@ -38,11 +39,33 @@ public class ArticleRepository : IArticleRepository
 
     public async Task DeleteAsync(int id)
     {
-        var article = await _context.Articles.FindAsync(id);
-        if (article != null)
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        await CascadeDeleteHelper.DeleteArticlesAsync(_context, [id]);
+        await transaction.CommitAsync();
+    }
+
+    public async Task AddWithInitialStockAsync(Article article, int initialQuantity, int emplacementId)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        _context.Articles.Add(article);
+        _context.Stocks.Add(new Stock
         {
-            _context.Articles.Remove(article);
-            await _context.SaveChangesAsync();
-        }
+            Article = article,
+            EmplacementId = emplacementId,
+            Quantite = initialQuantity
+        });
+        _context.MouvementsStock.Add(new MouvementStock
+        {
+            Article = article,
+            Type = TypeMouvementStock.Entree,
+            Quantite = initialQuantity,
+            PrixUnitaireEntree = article.CMUP,
+            EmplacementDestinationId = emplacementId,
+            DateMouvement = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
     }
 }

@@ -3,6 +3,7 @@ import { getAllArticles } from '../services/articleService';
 import { getAllEmplacements } from '../services/emplacementService';
 import { getAllMouvementsStock } from '../services/mouvementStockService';
 import MouvementStockForm from './MouvementStockForm';
+import Modal from './Modal';
 import TableRowsToggle from './TableRowsToggle';
 
 const labels = { 1: 'Entrée', 2: 'Sortie', 3: 'Transfert' };
@@ -48,7 +49,7 @@ function MouvementStockList({ canManage, onMovementRecorded }) {
   return (
     <section className="entity-section" aria-labelledby="mouvements-title">
       <div className="entity-list-header"><div><h2 id="mouvements-title">Mouvements de stock</h2><p>Historique des entrées, sorties et transferts.</p></div>{canManage && <button type="button" onClick={() => setIsFormOpen(true)}>Nouveau mouvement</button>}</div>
-      {isFormOpen && <MouvementStockForm articles={articles} emplacements={emplacements} onSaved={handleSaved} onCancel={() => setIsFormOpen(false)} />}
+      {isFormOpen && <Modal title="Nouveau mouvement" onClose={() => setIsFormOpen(false)}><MouvementStockForm articles={articles} emplacements={emplacements} onSaved={handleSaved} onCancel={() => setIsFormOpen(false)} /></Modal>}
       {loading && <p>Chargement des mouvements...</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
       {!loading && !error && <>

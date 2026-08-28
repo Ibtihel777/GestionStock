@@ -60,6 +60,8 @@ builder.Services
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddScoped<IDepotRepository, DepotRepository>();
+builder.Services.AddScoped<IFamilleArticleRepository, FamilleArticleRepository>();
 builder.Services.AddScoped<IEmplacementRepository, EmplacementRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<IMouvementStockRepository, MouvementStockRepository>();
@@ -67,6 +69,8 @@ builder.Services.AddScoped<IVerificationStockRepository, VerificationStockReposi
 builder.Services.AddScoped<ISignalementRepository, SignalementRepository>();
 
 builder.Services.AddScoped<ArticleService>();
+builder.Services.AddScoped<DepotService>();
+builder.Services.AddScoped<FamilleArticleService>();
 builder.Services.AddScoped<EmplacementService>();
 builder.Services.AddScoped<StockService>();
 builder.Services.AddScoped<MouvementStockService>();

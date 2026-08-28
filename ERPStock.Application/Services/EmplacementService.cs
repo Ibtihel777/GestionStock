@@ -7,17 +7,15 @@ namespace ERPStock.Application.Services;
 public class EmplacementService
 {
     private readonly IEmplacementRepository _repository;
+    private readonly IDepotRepository _depotRepository;
 
-    public EmplacementService(IEmplacementRepository repository)
+    public EmplacementService(IEmplacementRepository repository, IDepotRepository depotRepository)
     {
         _repository = repository;
+        _depotRepository = depotRepository;
     }
 
-    public async Task<List<EmplacementDto>> GetAllAsync()
-    {
-        var emplacements = await _repository.GetAllAsync();
-        return emplacements.Select(ToDto).ToList();
-    }
+    public async Task<List<EmplacementDto>> GetAllAsync() => (await _repository.GetAllAsync()).Select(ToDto).ToList();
 
     public async Task<EmplacementDto?> GetByIdAsync(int id)
     {
@@ -27,8 +25,10 @@ public class EmplacementService
 
     public async Task<EmplacementDto> CreateAsync(CreateEmplacementDto dto)
     {
+        await ValidateDepotAsync(dto.DepotId);
         var emplacement = new Emplacement
         {
+            DepotId = dto.DepotId,
             Zone = dto.Zone,
             Etagere = dto.Etagere,
             Tiroir = dto.Tiroir,
@@ -36,7 +36,7 @@ public class EmplacementService
         };
 
         await _repository.AddAsync(emplacement);
-        return ToDto(emplacement);
+        return ToDto(await _repository.GetByIdAsync(emplacement.Id) ?? emplacement);
     }
 
     public async Task<bool> UpdateAsync(int id, CreateEmplacementDto dto)
@@ -44,6 +44,8 @@ public class EmplacementService
         var emplacement = await _repository.GetByIdAsync(id);
         if (emplacement is null) return false;
 
+        await ValidateDepotAsync(dto.DepotId);
+        emplacement.DepotId = dto.DepotId;
         emplacement.Zone = dto.Zone;
         emplacement.Etagere = dto.Etagere;
         emplacement.Tiroir = dto.Tiroir;
@@ -55,27 +57,28 @@ public class EmplacementService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var emplacement = await _repository.GetByIdAsync(id);
-        if (emplacement is null) return false;
-
+        if (await _repository.GetByIdAsync(id) is null) return false;
         await _repository.DeleteAsync(id);
         return true;
     }
 
-    private static string CreateCode(CreateEmplacementDto dto)
+    private async Task ValidateDepotAsync(int depotId)
     {
-        return $"{dto.Zone}-{dto.Etagere}-{dto.Tiroir}";
+        if (depotId <= 0 || await _depotRepository.GetByIdAsync(depotId) is null)
+            throw new ArgumentException("Le dépôt sélectionné n'existe pas.");
     }
 
-    private static EmplacementDto ToDto(Emplacement emplacement)
+    private static string CreateCode(CreateEmplacementDto dto) => $"{dto.Zone}-{dto.Etagere}-{dto.Tiroir}";
+
+    private static EmplacementDto ToDto(Emplacement emplacement) => new()
     {
-        return new EmplacementDto
-        {
-            Id = emplacement.Id,
-            Zone = emplacement.Zone,
-            Etagere = emplacement.Etagere,
-            Tiroir = emplacement.Tiroir,
-            CodeEmplacement = emplacement.Code_Emplacement
-        };
-    }
+        Id = emplacement.Id,
+        DepotId = emplacement.DepotId,
+        DepotReference = emplacement.Depot?.Reference ?? string.Empty,
+        DepotNom = emplacement.Depot?.Nom ?? string.Empty,
+        Zone = emplacement.Zone,
+        Etagere = emplacement.Etagere,
+        Tiroir = emplacement.Tiroir,
+        CodeEmplacement = emplacement.Code_Emplacement
+    };
 }

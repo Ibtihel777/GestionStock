@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getAllArticles } from '../services/articleService';
 import { getAllEmplacements } from '../services/emplacementService';
 import { createVerification, getAllVerifications } from '../services/verificationService';
+import Modal from './Modal';
 import TableRowsToggle from './TableRowsToggle';
 
 function VerificationStockList() {
@@ -14,10 +15,11 @@ function VerificationStockList() {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [showAllRows, setShowAllRows] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const displayedVerifications = showAllRows
-    ? [...verifications].sort((a, b) => new Date(b.dateVerification) - new Date(a.dateVerification))
-    : [...verifications].sort((a, b) => new Date(b.dateVerification) - new Date(a.dateVerification)).slice(0, 5);
+  const displayedVerifications = [...verifications]
+    .sort((a, b) => new Date(b.dateVerification) - new Date(a.dateVerification));
+  const visibleVerifications = showAllRows ? displayedVerifications : displayedVerifications.slice(0, 5);
 
   const fetchData = async () => {
     try {
@@ -30,25 +32,19 @@ function VerificationStockList() {
         articleId: current.articleId || articleData[0]?.id || '',
         emplacementId: current.emplacementId || emplacementData[0]?.id || '',
       }));
-
-      try {
-        setVerifications(await getAllVerifications());
-        setShowAllRows(false);
-        setError(null);
-      } catch (requestError) {
-        console.error(requestError);
-        setVerifications([]);
-        setError("L'historique des vérifications est indisponible. Redémarrez l'API pour charger la nouvelle fonctionnalité.");
-      }
+      setVerifications(await getAllVerifications());
+      setShowAllRows(false);
+      setError(null);
     } catch (requestError) {
       console.error(requestError);
-      setError("Impossible de charger les articles ou les emplacements. Vérifiez que l'API est démarrée.");
+      setError("Impossible de charger les vérifications. Vérifiez que l'API est démarrée.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => { fetchData(); }, []);
+  const canSubmit = articles.length > 0 && emplacements.length > 0 && formData.photo;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -59,8 +55,8 @@ function VerificationStockList() {
       const verification = await createVerification(formData);
       setResult(verification);
       setFormData((current) => ({ ...current, photo: null }));
-      event.currentTarget.reset();
       await fetchData();
+      setIsFormOpen(false);
     } catch (requestError) {
       console.error(requestError);
       setError(requestError.response?.data?.message ?? "La vérification IA n'a pas pu être effectuée.");
@@ -69,29 +65,21 @@ function VerificationStockList() {
     }
   };
 
-  const canSubmit = articles.length > 0 && emplacements.length > 0 && formData.photo;
-
-  return (
-    <section className="entity-section" aria-labelledby="verifications-title">
-      <div className="entity-list-header"><div><h2 id="verifications-title">Vérification de stock par IA</h2><p>Compare le stock visible sur une photo avec la quantité théorique.</p></div></div>
-      <form className="entity-form verification-form" onSubmit={handleSubmit}>
-        <label>Article<select value={formData.articleId} onChange={(event) => setFormData((current) => ({ ...current, articleId: event.target.value }))} disabled={loading} required>{articles.map((article) => <option key={article.id} value={article.id}>{article.reference} — {article.designation}</option>)}</select></label>
-        <label>Emplacement<select value={formData.emplacementId} onChange={(event) => setFormData((current) => ({ ...current, emplacementId: event.target.value }))} disabled={loading} required>{emplacements.map((emplacement) => <option key={emplacement.id} value={emplacement.id}>{emplacement.codeEmplacement} — Zone {emplacement.zone}, étagère {emplacement.etagere}, tiroir {emplacement.tiroir}</option>)}</select></label>
-        <label className="photo-input">Photo de la zone<input type="file" accept="image/png,image/jpeg,image/webp" capture="environment" onChange={(event) => setFormData((current) => ({ ...current, photo: event.target.files[0] ?? null }))} disabled={loading} required /><span>{formData.photo?.name ?? 'JPEG, PNG ou WebP — 10 Mo maximum'}</span></label>
-        {error && <p className="form-error" role="alert">{error}</p>}
-        <div className="form-actions"><button type="submit" disabled={submitting || !canSubmit}>{submitting ? 'Analyse Gemini…' : 'Compter'}</button></div>
-      </form>
-      {result && !error && <div className={`verification-result ${result.ecart === 0 ? 'is-balanced' : 'is-different'}`} role="status"><strong>{result.ecart === 0 ? 'Stock conforme' : 'Écart détecté'}</strong><span>Théorique : {result.quantiteTheorique} · Gemini : {result.quantiteDetectee} · Écart : {result.ecart > 0 ? '+' : ''}{result.ecart}</span></div>}
-      {loading && <p>Chargement des vérifications...</p>}
-      {!loading && <>
-        <div className="table-wrapper"><table><thead><tr><th>Date</th><th>Article</th><th>Emplacement</th><th>Théorique</th><th>Détectée par Gemini</th><th>Écart</th></tr></thead><tbody>
-          {verifications.length === 0 ? <tr><td colSpan="6" className="empty-cell">Aucune vérification enregistrée.</td></tr>
-            : displayedVerifications.map((verification) => <tr key={verification.id}><td>{new Date(verification.dateVerification).toLocaleString('fr-FR')}</td><td>{verification.articleReference} — {verification.articleDesignation}</td><td>{verification.codeEmplacement}</td><td>{verification.quantiteTheorique}</td><td>{verification.quantiteDetectee}</td><td><span className={`gap-value ${verification.ecart === 0 ? 'is-balanced' : verification.ecart > 0 ? 'is-positive' : 'is-negative'}`}>{verification.ecart > 0 ? '+' : ''}{verification.ecart}</span></td></tr>)}
-        </tbody></table></div>
-        {verifications.length > 5 && <TableRowsToggle isExpanded={showAllRows} onToggle={() => setShowAllRows((current) => !current)} />}
-      </>}
-    </section>
-  );
+  return <section className="entity-section" aria-labelledby="verifications-title">
+    <div className="entity-list-header"><div><h2 id="verifications-title">Vérification de stock par IA</h2><p>Compare le stock visible sur une photo avec la quantité théorique.</p></div><button type="button" onClick={() => setIsFormOpen(true)}>Nouvelle vérification</button></div>
+    {isFormOpen && <Modal title="Nouvelle vérification IA" onClose={() => setIsFormOpen(false)} size="wide"><form className="entity-form verification-form" onSubmit={handleSubmit}>
+      <label>Article<select value={formData.articleId} onChange={(event) => setFormData((current) => ({ ...current, articleId: event.target.value }))} disabled={loading} required>{articles.map((article) => <option key={article.id} value={article.id}>{article.reference} — {article.designation}</option>)}</select></label>
+      <label>Emplacement<select value={formData.emplacementId} onChange={(event) => setFormData((current) => ({ ...current, emplacementId: event.target.value }))} disabled={loading} required>{emplacements.map((emplacement) => <option key={emplacement.id} value={emplacement.id}>{emplacement.codeEmplacement} — Zone {emplacement.zone}, étagère {emplacement.etagere}, tiroir {emplacement.tiroir}</option>)}</select></label>
+      <label className="photo-input">Photo de la zone<input type="file" accept="image/png,image/jpeg,image/webp" capture="environment" onChange={(event) => setFormData((current) => ({ ...current, photo: event.target.files[0] ?? null }))} disabled={loading} required /><span>{formData.photo?.name ?? 'JPEG, PNG ou WebP — 10 Mo maximum'}</span></label>
+      {error && <p className="form-error" role="alert">{error}</p>}
+      <div className="form-actions"><button type="submit" disabled={submitting || !canSubmit}>{submitting ? 'Analyse…' : 'Compter'}</button><button type="button" onClick={() => setIsFormOpen(false)} disabled={submitting}>Annuler</button></div>
+    </form></Modal>}
+    {result && !error && <div className={`verification-result ${result.ecart === 0 ? 'is-balanced' : 'is-different'}`} role="status"><strong>{result.ecart === 0 ? 'Stock conforme' : 'Écart détecté'}</strong><span>Théorique : {result.quantiteTheorique} · Détection : {result.quantiteDetectee} · Écart : {result.ecart > 0 ? '+' : ''}{result.ecart}</span></div>}
+    {loading && <p>Chargement des vérifications...</p>}
+    {!loading && <><div className="table-wrapper"><table><thead><tr><th>Date</th><th>Article</th><th>Emplacement</th><th>Théorique</th><th>Détectée par Gemini</th><th>Écart</th></tr></thead><tbody>
+      {verifications.length === 0 ? <tr><td colSpan="6" className="empty-cell">Aucune vérification enregistrée.</td></tr> : visibleVerifications.map((verification) => <tr key={verification.id}><td>{new Date(verification.dateVerification).toLocaleString('fr-FR')}</td><td>{verification.articleReference} — {verification.articleDesignation}</td><td>{verification.codeEmplacement}</td><td>{verification.quantiteTheorique}</td><td>{verification.quantiteDetectee}</td><td><span className={`gap-value ${verification.ecart === 0 ? 'is-balanced' : verification.ecart > 0 ? 'is-positive' : 'is-negative'}`}>{verification.ecart > 0 ? '+' : ''}{verification.ecart}</span></td></tr>)}
+    </tbody></table></div>{verifications.length > 5 && <TableRowsToggle isExpanded={showAllRows} onToggle={() => setShowAllRows((current) => !current)} />}</>}
+  </section>;
 }
 
 export default VerificationStockList;
