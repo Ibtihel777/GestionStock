@@ -25,6 +25,14 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(user => user.Nom).HasMaxLength(100);
+            entity.Property(user => user.Prenom).HasMaxLength(100);
+            entity.Property(user => user.StatutApprobation).HasMaxLength(20).HasDefaultValue(AccountApprovalStatus.Acceptee);
+            entity.Property(user => user.DateDemande).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
         modelBuilder.Entity<Depot>(entity =>
         {
             entity.HasOne(depot => depot.DepotParent)

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import AdminDashboard from './components/AdminDashboard';
 import ArticleList from './components/ArticleList';
+import ConsultantAccountRequestList from './components/ConsultantAccountRequestList';
 import DepotList from './components/DepotList';
 import EmplacementList from './components/EmplacementList';
 import FamilleArticleList from './components/FamilleArticleList';
@@ -23,9 +24,10 @@ const superAdminNavigation = [
   { id: 'mouvements', label: 'Mouvements', icon: '↔' },
   { id: 'verifications', label: 'Vérifications IA', icon: '◉' },
   { id: 'alertes', label: 'Alertes', icon: '!' },
+  { id: 'inventaires', label: 'Inventaires', icon: '☷' },
 ];
 
-const consultantNavigation = superAdminNavigation.filter((item) => !['dashboard', 'alertes'].includes(item.id));
+const consultantNavigation = superAdminNavigation.filter((item) => !['dashboard', 'alertes', 'inventaires'].includes(item.id));
 
 function App() {
   const stockListRef = useRef(null);
@@ -58,7 +60,8 @@ function App() {
       case 'stock': return <StockList ref={stockListRef} canManage={isSuperAdmin} />;
       case 'mouvements': return <MouvementStockList canManage={isSuperAdmin} onMovementRecorded={() => { stockListRef.current?.refresh(); articleListRef.current?.refresh(); }} />;
       case 'verifications': return <VerificationStockList />;
-      case 'alertes': return isSuperAdmin ? <SignalementList onStockAdjusted={() => stockListRef.current?.refresh()} /> : null;
+      case 'alertes': return isSuperAdmin ? <ConsultantAccountRequestList /> : null;
+      case 'inventaires': return isSuperAdmin ? <SignalementList onStockAdjusted={() => stockListRef.current?.refresh()} /> : null;
       default: return null;
     }
   };

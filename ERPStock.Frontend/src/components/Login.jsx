@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { login, register } from '../services/authService';
 
 function Login({ onLogin }) {
+  const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
+  const [telephone, setTelephone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
@@ -31,11 +34,15 @@ function Login({ onLogin }) {
     setSubmitting(true);
     try {
       if (isRegistering) {
-        await register(email, password);
+        const response = await register({ nom, prenom, telephone, email, password });
+        setNom('');
+        setPrenom('');
+        setTelephone('');
+        setEmail('');
         setPassword('');
         setPasswordConfirmation('');
         setIsRegistering(false);
-        setSuccess('Votre compte Consultant a été créé. Vous pouvez maintenant vous connecter.');
+        setSuccess(response.message ?? 'Votre demande a été envoyée. Vous pourrez vous connecter après validation par un administrateur.');
       } else {
         onLogin(await login(email, password));
       }
@@ -51,14 +58,19 @@ function Login({ onLogin }) {
       <form className="login-card" onSubmit={handleSubmit}>
         <p className="eyebrow">ERPStock</p>
         <h1>{isRegistering ? 'Créer un compte' : 'Connexion'}</h1>
-        <p>{isRegistering ? 'Chaque nouveau compte est créé avec le rôle Consultant.' : 'Accédez à la gestion de stock selon votre rôle.'}</p>
+        <p>{isRegistering ? 'Votre demande de compte Consultant doit être validée par un administrateur.' : 'Accédez à la gestion de stock selon votre rôle.'}</p>
+        {isRegistering && <div className="login-form-grid">
+          <label>Prénom<input type="text" value={prenom} onChange={(event) => setPrenom(event.target.value)} required autoComplete="given-name" maxLength="100" /></label>
+          <label>Nom<input type="text" value={nom} onChange={(event) => setNom(event.target.value)} required autoComplete="family-name" maxLength="100" /></label>
+        </div>}
+        {isRegistering && <label>Numéro de téléphone<input type="tel" value={telephone} onChange={(event) => setTelephone(event.target.value)} required autoComplete="tel" minLength="6" maxLength="25" /></label>}
         <label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" /></label>
         <label>Mot de passe<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength="8" autoComplete={isRegistering ? 'new-password' : 'current-password'} /></label>
         {isRegistering && <label>Confirmer le mot de passe<input type="password" value={passwordConfirmation} onChange={(event) => setPasswordConfirmation(event.target.value)} required minLength="8" autoComplete="new-password" /></label>}
         {error && <p className="form-error" role="alert">{error}</p>}
         {success && <p className="form-success" role="status">{success}</p>}
-        <button type="submit" disabled={submitting}>{submitting ? 'Veuillez patienter…' : isRegistering ? 'Créer mon compte' : 'Se connecter'}</button>
-        <button className="login-mode-button" type="button" onClick={switchMode} disabled={submitting}>{isRegistering ? 'J’ai déjà un compte' : 'Créer un compte '}</button>
+        <button type="submit" disabled={submitting}>{submitting ? 'Veuillez patienter…' : isRegistering ? 'Envoyer ma demande' : 'Se connecter'}</button>
+        <button className="login-mode-button" type="button" onClick={switchMode} disabled={submitting}>{isRegistering ? 'J’ai déjà un compte' : 'Créer un compte'}</button>
       </form>
     </main>
   );
