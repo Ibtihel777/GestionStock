@@ -16,13 +16,16 @@ public class StockService
     public async Task<List<StockDto>> GetAllAsync()
     {
         var stocks = await _repository.GetAllAsync();
-        return stocks.Select(ToDto).ToList();
+        var quantitesParArticle = stocks
+            .GroupBy(stock => stock.ArticleId)
+            .ToDictionary(group => group.Key, group => group.Sum(stock => stock.Quantite));
+        return stocks.Select(stock => ToDto(stock, quantitesParArticle[stock.ArticleId])).ToList();
     }
 
     public async Task<StockDto?> GetByIdAsync(int id)
     {
         var stock = await _repository.GetByIdAsync(id);
-        return stock is null ? null : ToDto(stock);
+        return stock is null ? null : ToDto(stock, await _repository.GetTotalQuantityByArticleAsync(stock.ArticleId));
     }
 
     public async Task<StockDto> CreateAsync(CreateStockDto dto)
@@ -36,7 +39,9 @@ public class StockService
 
         await _repository.AddAsync(stock);
         var createdStock = await _repository.GetByIdAsync(stock.Id);
-        return ToDto(createdStock!);
+        if (createdStock is null)
+            throw new InvalidOperationException("Le stock créé est introuvable.");
+        return ToDto(createdStock, await _repository.GetTotalQuantityByArticleAsync(createdStock.ArticleId));
     }
 
     public async Task<bool> UpdateAsync(int id, CreateStockDto dto)
@@ -61,7 +66,7 @@ public class StockService
         return true;
     }
 
-    private static StockDto ToDto(Stock stock)
+    private static StockDto ToDto(Stock stock, int quantiteTotaleArticle)
     {
         return new StockDto
         {
@@ -69,6 +74,9 @@ public class StockService
             Quantite = stock.Quantite,
             ArticleId = stock.ArticleId,
             ArticleReference = stock.Article.Reference,
+            ArticleUniteMesure = stock.Article.UniteMesure,
+            ArticleSeuilMinimum = stock.Article.SeuilMinimum,
+            QuantiteTotaleArticle = quantiteTotaleArticle,
             EmplacementId = stock.EmplacementId,
             CodeEmplacement = stock.Emplacement.Code_Emplacement
         };

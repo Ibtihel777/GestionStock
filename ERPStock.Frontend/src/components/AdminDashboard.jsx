@@ -11,6 +11,7 @@ const INACTIVE_DAYS = 30;
 const COLORS = ['#4969df', '#55a66f', '#e69c24', '#9a64d8', '#dd6b75', '#4ba8b6'];
 
 const formatCurrency = (value) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'TND', maximumFractionDigits: 2 }).format(value || 0);
+const formatPreciseCurrency = (value) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'TND', minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(value || 0);
 const formatNumber = (value) => new Intl.NumberFormat('fr-FR').format(value || 0);
 const formatDate = (value) => new Date(value).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
 const dayKey = (value) => {
@@ -193,7 +194,7 @@ function AdminDashboard({ onOpenManagement, onOpenAlerts }) {
       {error && <p className="form-error" role="alert">{error}</p>}
       {!loading && !error && <>
         <div className="metric-grid dashboard-kpis">
-          <article className="metric-card"><span className="metric-icon blue">DT</span><div><span>Valeur totale du stock</span><strong>{formatCurrency(summary.stockValue)}</strong><small>Quantité × CMUP actuel</small></div></article>
+          <article className="metric-card"><span className="metric-icon blue">DT</span><div><span>Valeur totale du stock</span><strong>{formatPreciseCurrency(summary.stockValue)}</strong><small>Quantité × CMUP actuel</small></div></article>
           <article className="metric-card"><span className="metric-icon green">#</span><div><span>Articles distincts en stock</span><strong>{formatNumber(summary.distinctArticles)}</strong><small>{formatNumber(summary.totalQuantity)} unités disponibles</small></div></article>
           <article className="metric-card"><span className="metric-icon red">↔</span><div><span>Mouvements</span><strong>{summary.todayMovements} / {summary.weekMovements}</strong><small>Aujourd’hui / 7 derniers jours</small></div></article>
           <article className="metric-card"><span className="metric-icon blue">▣</span><div><span>Total produits en stock</span><strong>{formatNumber(summary.totalQuantity)}</strong><small>Somme des quantités de tous les articles</small></div></article>

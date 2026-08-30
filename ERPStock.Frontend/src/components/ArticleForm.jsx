@@ -3,6 +3,8 @@ import { createArticle, updateArticle } from '../services/articleService';
 import { getAllEmplacements } from '../services/emplacementService';
 import { getAllFamillesArticles } from '../services/familleArticleService';
 
+const DEFAULT_UNIT = 'Unit\u00e9';
+
 const emptyArticle = {
   reference: '',
   designation: '',
@@ -11,9 +13,9 @@ const emptyArticle = {
   type: '0',
   suiviStock: '0',
   cmup: '',
-  unitesParCarton: '',
+  uniteMesure: DEFAULT_UNIT,
+  seuilMinimum: '',
   initialStockQuantity: '',
-  initialStockCartons: '',
   initialStockEmplacementId: '',
 };
 
@@ -24,11 +26,7 @@ function ArticleForm({ article, onSaved, onCancel }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const isEditing = Boolean(article);
-  const unitesParCarton = Number(formData.unitesParCarton);
-  const isCartonized = Number.isInteger(unitesParCarton) && unitesParCarton > 0;
-  const initialQuantity = isCartonized
-    ? Number(formData.initialStockCartons || 0) * unitesParCarton
-    : Number(formData.initialStockQuantity || 0);
+  const initialQuantity = Number(formData.initialStockQuantity || 0);
   const initialCostLabel = formData.modeGestion === 'CMUP'
     ? 'Coût moyen pondéré initial (CMUP)'
     : 'Prix du premier lot';
@@ -42,9 +40,9 @@ function ArticleForm({ article, onSaved, onCancel }) {
       type: String(article.type ?? 0),
       suiviStock: String(article.suiviStock ?? 0),
       cmup: article.cmup ?? '',
-      unitesParCarton: article.unitesParCarton ?? '',
+      uniteMesure: article.uniteMesure?.trim() || DEFAULT_UNIT,
+      seuilMinimum: article.seuilMinimum || '',
       initialStockQuantity: '',
-      initialStockCartons: '',
       initialStockEmplacementId: '',
     } : emptyArticle);
     setError(null);
@@ -81,7 +79,8 @@ function ArticleForm({ article, onSaved, onCancel }) {
         type: Number(formData.type),
         suiviStock: Number(formData.suiviStock),
         cmup: Number(formData.cmup),
-        unitesParCarton: formData.unitesParCarton === '' ? null : Number(formData.unitesParCarton),
+        uniteMesure: formData.uniteMesure?.trim() || DEFAULT_UNIT,
+        seuilMinimum: Number(formData.seuilMinimum),
         initialStockQuantity: isEditing ? 0 : initialQuantity,
         initialStockEmplacementId: isEditing || initialQuantity === 0 ? null : Number(formData.initialStockEmplacementId),
       };
@@ -105,14 +104,12 @@ function ArticleForm({ article, onSaved, onCancel }) {
       <label>Type d'article<select name="type" value={formData.type} onChange={handleChange} required><option value="0">Standard</option><option value="1">Gamme</option></select></label>
       <label>Suivi en stock<select name="suiviStock" value={formData.suiviStock} onChange={handleChange} required><option value="0">Suivi</option><option value="1">Non suivi</option><option value="2">Lot</option></select></label>
       <label>{initialCostLabel}<input name="cmup" type="number" min="0" step="0.01" value={formData.cmup} onChange={handleChange} required /></label>
-      <label>Unités par carton<input name="unitesParCarton" type="number" min="1" step="1" value={formData.unitesParCarton} onChange={handleChange} /></label>
+      <label>Unité de mesure<select name="uniteMesure" value={formData.uniteMesure} onChange={handleChange} required><option value={DEFAULT_UNIT}>{DEFAULT_UNIT}</option><option value="kg">kg</option><option value="g">g</option><option value="litre">litre</option><option value="mL">mL</option><option value="mètre">mètre</option><option value="m²">m²</option></select></label>
+      <label>Seuil minimum<input name="seuilMinimum" type="number" min="1" step="1" value={formData.seuilMinimum} onChange={handleChange} required /><small>Une alerte rouge s’affiche lorsque la quantité atteint ce seuil.</small></label>
       {!isEditing && <fieldset className="initial-stock-fields">
         <legend>Stock initial </legend>
         <label>Emplacement<select name="initialStockEmplacementId" value={formData.initialStockEmplacementId} onChange={handleChange}><option value="">Aucun stock initial</option>{emplacements.map((emplacement) => <option key={emplacement.id} value={emplacement.id}>{emplacement.codeEmplacement} — {emplacement.depotNom ?? emplacement.depotReference}</option>)}</select></label>
-        {isCartonized
-          ? <label>Nombre de cartons<input name="initialStockCartons" type="number" min="0" step="1" value={formData.initialStockCartons} onChange={handleChange} /></label>
-          : <label>Quantité initiale (unités)<input name="initialStockQuantity" type="number" min="0" step="1" value={formData.initialStockQuantity} onChange={handleChange} /></label>}
-        {isCartonized && <p className="initial-stock-total">Quantité calculée : <strong>{initialQuantity}</strong> unité{initialQuantity > 1 ? 's' : ''} ({formData.initialStockCartons || 0} carton{Number(formData.initialStockCartons) > 1 ? 's' : ''} × {unitesParCarton}).</p>}
+        <label>Quantité initiale ({formData.uniteMesure})<input name="initialStockQuantity" type="number" min="0" step="1" value={formData.initialStockQuantity} onChange={handleChange} /></label>
       </fieldset>}
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="form-actions"><button type="submit" disabled={submitting}>{submitting ? 'Enregistrement...' : isEditing ? 'Enregistrer' : 'Créer'}</button><button type="button" onClick={onCancel} disabled={submitting}>Annuler</button></div>

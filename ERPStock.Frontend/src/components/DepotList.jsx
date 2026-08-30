@@ -5,6 +5,29 @@ import DepotForm from './DepotForm';
 import Modal from './Modal';
 import TableRowsToggle from './TableRowsToggle';
 
+const getVisibleDepots = (depots, expandedIds) => {
+  const depotIds = new Set(depots.map((depot) => depot.id));
+  const childrenByParent = new Map();
+  depots.forEach((depot) => {
+    const parentId = depotIds.has(depot.depotParentId) ? depot.depotParentId : null;
+    childrenByParent.set(parentId, [...(childrenByParent.get(parentId) ?? []), depot]);
+  });
+
+  const rows = [];
+  const addRows = (parentId, depth) => {
+    (childrenByParent.get(parentId) ?? [])
+      .sort((first, second) => first.nom.localeCompare(second.nom, 'fr'))
+      .forEach((depot) => {
+        const hasChildren = (childrenByParent.get(depot.id) ?? []).length > 0;
+        rows.push({ depot, depth, hasChildren });
+        if (hasChildren && expandedIds.has(depot.id)) addRows(depot.id, depth + 1);
+      });
+  };
+
+  addRows(null, 0);
+  return rows;
+};
+
 function DepotList({ canManage }) {
   const [depots, setDepots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,14 +37,14 @@ function DepotList({ canManage }) {
   const [depotToDelete, setDepotToDelete] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showAllRows, setShowAllRows] = useState(false);
+  const [expandedDepotIds, setExpandedDepotIds] = useState(new Set());
 
   const fetchDepots = async () => {
     try {
       setLoading(true);
       setDepots(await getAllDepots());
       setError(null);
-      setShowAllRows(false);
+      setExpandedDepotIds(new Set());
     } catch {
       setError('Impossible de charger les dépôts.');
     } finally {
@@ -31,7 +54,13 @@ function DepotList({ canManage }) {
 
   useEffect(() => { fetchDepots(); }, []);
   const closeForm = () => { setIsFormOpen(false); setDepotToEdit(null); };
-  const displayedDepots = showAllRows ? depots : depots.slice(0, 5);
+  const displayedDepots = getVisibleDepots(depots, expandedDepotIds);
+  const toggleDepot = (depotId) => setExpandedDepotIds((current) => {
+    const next = new Set(current);
+    if (next.has(depotId)) next.delete(depotId);
+    else next.add(depotId);
+    return next;
+  });
   const confirmDelete = async () => {
     if (!depotToDelete) return;
     try {
@@ -52,7 +81,7 @@ function DepotList({ canManage }) {
     {isFormOpen && <Modal title={depotToEdit ? 'Modifier le dépôt' : 'Nouveau dépôt'} onClose={closeForm}><DepotForm depot={depotToEdit} depots={depots} onSaved={async () => { await fetchDepots(); closeForm(); }} onCancel={closeForm} /></Modal>}
     {depotToDelete && <DeleteConfirmationModal itemName={'le dépôt « ' + depotToDelete.nom + ' »'} impact="Cette action supprime les dépôts enfants, leurs emplacements, stocks, mouvements, vérifications et signalements associés." onConfirm={confirmDelete} onCancel={() => setDepotToDelete(null)} isDeleting={isDeleting} />}
     {actionError && <p className="form-error" role="alert">{actionError}</p>}{loading && <p>Chargement des dépôts...</p>}{error && <p className="form-error">{error}</p>}
-    {!loading && !error && <><div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Nom</th><th>Dépôt parent</th>{canManage && <th>Actions</th>}</tr></thead><tbody>{depots.length === 0 ? <tr><td colSpan={canManage ? 4 : 3} className="empty-cell">Aucun dépôt enregistré.</td></tr> : displayedDepots.map((depot) => <tr key={depot.id}><td>{depot.reference || '—'}</td><td>{depot.nom}</td><td>{depot.referenceDepotParent ?? '—'}</td>{canManage && <td className="table-actions"><button type="button" onClick={() => { setDepotToEdit(depot); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => setDepotToDelete(depot)}>Supprimer</button></td>}</tr>)}</tbody></table></div>{depots.length > 5 && <TableRowsToggle isExpanded={showAllRows} onToggle={() => setShowAllRows((value) => !value)} />}</>}
+    {!loading && !error && <div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Nom</th>{canManage && <th>Actions</th>}</tr></thead><tbody>{depots.length === 0 ? <tr><td colSpan={canManage ? 3 : 2} className="empty-cell">Aucun dépôt enregistré.</td></tr> : displayedDepots.map(({ depot, depth, hasChildren }) => { const isExpanded = expandedDepotIds.has(depot.id); return <tr key={depot.id} className={depth > 0 ? 'hierarchy-row hierarchy-row--child' : 'hierarchy-row'}><td>{depot.reference || '—'}</td><td><div className="hierarchy-label" style={{ paddingLeft: `${depth * 22}px` }}>{hasChildren ? <button type="button" className="hierarchy-toggle" onClick={() => toggleDepot(depot.id)} aria-expanded={isExpanded}><span aria-hidden="true">{isExpanded ? '⌄' : '›'}</span>{depot.nom}</button> : <span className="hierarchy-leaf">{depot.nom}</span>}</div></td>{canManage && <td className="table-actions"><button type="button" onClick={() => { setDepotToEdit(depot); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => setDepotToDelete(depot)}>Supprimer</button></td>}</tr>; })}</tbody></table></div>}
   </section>;
 }
 

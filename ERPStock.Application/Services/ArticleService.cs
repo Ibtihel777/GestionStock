@@ -31,6 +31,7 @@ public class ArticleService
     public async Task<ArticleDto> CreateAsync(CreateArticleDto dto)
     {
         ValidateModeGestion(dto.ModeGestion);
+        ValidateSeuilMinimum(dto.SeuilMinimum);
         await ValidateFamilleAsync(dto.FamilleArticleId);
         await ValidateInitialStockAsync(dto);
         var article = new Article
@@ -42,7 +43,8 @@ public class ArticleService
             Type = dto.Type,
             SuiviStock = dto.SuiviStock,
             CMUP = dto.CMUP,
-            UnitesParCarton = dto.UnitesParCarton,
+            UniteMesure = NormalizeUniteMesure(dto.UniteMesure),
+            SeuilMinimum = dto.SeuilMinimum,
             DateCreation = DateTime.UtcNow
         };
 
@@ -59,6 +61,7 @@ public class ArticleService
         if (article is null) return false;
 
         ValidateModeGestion(dto.ModeGestion);
+        ValidateSeuilMinimum(dto.SeuilMinimum);
         await ValidateFamilleAsync(dto.FamilleArticleId);
         article.Reference = dto.Reference;
         article.Designation = dto.Designation;
@@ -67,7 +70,8 @@ public class ArticleService
         article.Type = dto.Type;
         article.SuiviStock = dto.SuiviStock;
         article.CMUP = dto.CMUP;
-        article.UnitesParCarton = dto.UnitesParCarton;
+        article.UniteMesure = NormalizeUniteMesure(dto.UniteMesure);
+        article.SeuilMinimum = dto.SeuilMinimum;
 
         await _repository.UpdateAsync(article);
         return true;
@@ -104,6 +108,20 @@ public class ArticleService
             throw new ArgumentException("Le mode de gestion doit etre FIFO, LIFO ou CMUP.");
     }
 
+    private static void ValidateSeuilMinimum(int seuilMinimum)
+    {
+        if (seuilMinimum < 0)
+            throw new ArgumentException("Le seuil minimum ne peut pas être négatif.");
+    }
+
+    private static string NormalizeUniteMesure(string uniteMesure)
+    {
+        var uniteNormalisee = string.IsNullOrWhiteSpace(uniteMesure) ? "Unit\u00e9" : uniteMesure.Trim();
+        if (uniteNormalisee.Length > 30)
+            throw new ArgumentException("L’unité de mesure ne peut pas dépasser 30 caractères.");
+        return uniteNormalisee;
+    }
+
     private static ArticleDto ToDto(Article article) => new()
     {
         Id = article.Id,
@@ -116,7 +134,9 @@ public class ArticleService
         Type = article.Type,
         SuiviStock = article.SuiviStock,
         CMUP = article.CMUP,
-        UnitesParCarton = article.UnitesParCarton,
+        UniteMesure = article.UniteMesure,
+        SeuilMinimum = article.SeuilMinimum,
+        QuantiteEnStock = article.Stocks.Sum(stock => stock.Quantite),
         DateCreation = article.DateCreation
     };
 }

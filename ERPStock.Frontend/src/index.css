@@ -20,6 +20,20 @@
   -webkit-font-smoothing: antialiased;
 }
 
+:root[data-theme='dark'] {
+  --bg: #10182a;
+  --surface: #172238;
+  --surface-muted: #1d2a42;
+  --text: #b5c2d7;
+  --text-h: #f1f5ff;
+  --border: #2c3a53;
+  --accent: #7895ff;
+  --accent-dark: #9badff;
+  --accent-soft: #24345d;
+  --danger: #ff7b87;
+  --shadow: 0 14px 35px rgba(0, 0, 0, .22);
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -28,6 +42,9 @@ body {
   margin: 0;
   background: radial-gradient(circle at 10% 0%, #e9efff 0, transparent 26rem), var(--bg);
 }
+
+:root[data-theme='dark'] body { background: radial-gradient(circle at 10% 0%, #1c2c52 0, transparent 27rem), var(--bg); }
+:root[data-theme='dark'] input, :root[data-theme='dark'] select { color-scheme: dark; }
 
 button,
 input,

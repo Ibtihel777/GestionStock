@@ -14,6 +14,8 @@ public class ArticleDto
     public TypeArticle Type { get; set; }
     public ModeSuiviStock SuiviStock { get; set; }
     public decimal CMUP { get; set; }
-    public int? UnitesParCarton { get; set; }
+    public string UniteMesure { get; set; } = string.Empty;
+    public int SeuilMinimum { get; set; }
+    public int QuantiteEnStock { get; set; }
     public DateTime DateCreation { get; set; }
 }

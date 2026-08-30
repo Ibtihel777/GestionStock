@@ -56,11 +56,8 @@ public class VerificationStockService
             dto.Photo,
             dto.PhotoContentType,
             article.Designation,
-            article.UnitesParCarton,
             cancellationToken);
-        var quantiteDetectee = article.UnitesParCarton is int unitesParCarton
-            ? checked(nombreDetecteParIa * unitesParCarton)
-            : nombreDetecteParIa;
+        var quantiteDetectee = nombreDetecteParIa;
 
         var verification = new VerificationStock
         {

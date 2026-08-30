@@ -16,12 +16,17 @@ public class ArticleRepository : IArticleRepository
 
     public async Task<List<Article>> GetAllAsync()
     {
-        return await _context.Articles.Include(article => article.FamilleArticle).ToListAsync();
+        return await _context.Articles
+            .Include(article => article.FamilleArticle)
+            .Include(article => article.Stocks)
+            .ToListAsync();
     }
 
     public async Task<Article?> GetByIdAsync(int id)
     {
-        return await _context.Articles.Include(article => article.FamilleArticle)
+        return await _context.Articles
+            .Include(article => article.FamilleArticle)
+            .Include(article => article.Stocks)
             .FirstOrDefaultAsync(article => article.Id == id);
     }
 

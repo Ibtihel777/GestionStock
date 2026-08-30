@@ -11,7 +11,8 @@ public class CreateArticleDto
     public TypeArticle Type { get; set; }
     public ModeSuiviStock SuiviStock { get; set; }
     public decimal CMUP { get; set; }
-    public int? UnitesParCarton { get; set; }
+    public string UniteMesure { get; set; } = "Unit\u00e9";
+    public int SeuilMinimum { get; set; } = 10;
     public int InitialStockQuantity { get; set; }
     public int? InitialStockEmplacementId { get; set; }
 }

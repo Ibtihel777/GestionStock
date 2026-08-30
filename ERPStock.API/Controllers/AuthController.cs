@@ -46,7 +46,10 @@ public class AuthController : ControllerBase
         {
             Token = CreateToken(user, role),
             Email = user.Email ?? user.UserName ?? string.Empty,
-            Role = role
+            Role = role,
+            Nom = user.Nom,
+            Prenom = user.Prenom,
+            Telephone = user.PhoneNumber ?? string.Empty
         });
     }
 
@@ -111,6 +114,70 @@ public class AuthController : ControllerBase
     [Authorize(Roles = AppRoles.SuperAdmin)]
     public Task<IActionResult> RejectConsultantRequest(string id) => UpdateConsultantRequestStatus(id, AccountApprovalStatus.Refusee);
 
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<ActionResult<UserProfileDto>> GetProfile()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return Unauthorized();
+
+        return Ok(await ToProfileDtoAsync(user));
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromBody] UpdateUserProfileDto dto)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return Unauthorized();
+
+        var email = dto.Email.Trim();
+        var existingUser = await _userManager.FindByEmailAsync(email);
+        if (existingUser is not null && existingUser.Id != user.Id)
+            return Conflict(new { message = "Un compte utilise déjà cet email." });
+
+        user.Nom = dto.Nom.Trim();
+        user.Prenom = dto.Prenom.Trim();
+        user.PhoneNumber = dto.Telephone.Trim();
+        user.Email = email;
+        user.UserName = email;
+        user.NormalizedEmail = _userManager.NormalizeEmail(email);
+        user.NormalizedUserName = _userManager.NormalizeName(email);
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            return BadRequest(new { message = string.Join(" ", result.Errors.Select(error => error.Description)) });
+
+        return Ok(await ToProfileDtoAsync(user));
+    }
+
+    [HttpGet("users")]
+    [Authorize(Roles = AppRoles.SuperAdmin)]
+    public async Task<ActionResult<IEnumerable<UserListDto>>> GetUsers()
+    {
+        var users = _userManager.Users.OrderBy(user => user.Nom).ThenBy(user => user.Prenom).ToList();
+        var result = new List<UserListDto>();
+
+        foreach (var user in users)
+        {
+            var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Sans rôle";
+            result.Add(new UserListDto
+            {
+                Id = user.Id,
+                Nom = user.Nom,
+                Prenom = user.Prenom,
+                Email = user.Email ?? string.Empty,
+                Telephone = user.PhoneNumber ?? string.Empty,
+                Role = role,
+                Statut = user.StatutApprobation
+            });
+        }
+
+        return Ok(result);
+    }
+
     private async Task<IActionResult> UpdateConsultantRequestStatus(string id, string statut)
     {
         var user = await _userManager.FindByIdAsync(id);
@@ -126,6 +193,18 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = string.Join(" ", result.Errors.Select(error => error.Description)) });
 
         return NoContent();
+    }
+
+    private async Task<UserProfileDto> ToProfileDtoAsync(ApplicationUser user)
+    {
+        return new UserProfileDto
+        {
+            Nom = user.Nom,
+            Prenom = user.Prenom,
+            Email = user.Email ?? string.Empty,
+            Telephone = user.PhoneNumber ?? string.Empty,
+            Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? string.Empty
+        };
     }
 
     private string CreateToken(ApplicationUser user, string role)

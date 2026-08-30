@@ -51,6 +51,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<Article>(entity =>
         {
+            entity.Property(article => article.SeuilMinimum).HasDefaultValue(10);
+            entity.Property(article => article.UniteMesure).HasMaxLength(30).HasDefaultValue("Unit\u00e9");
+
             entity.HasOne(article => article.FamilleArticle)
                 .WithMany(famille => famille.Articles)
                 .HasForeignKey(article => article.FamilleArticleId)

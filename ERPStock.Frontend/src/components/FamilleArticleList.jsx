@@ -3,7 +3,29 @@ import { deleteFamilleArticle, getAllFamillesArticles } from '../services/famill
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import FamilleArticleForm from './FamilleArticleForm';
 import Modal from './Modal';
-import TableRowsToggle from './TableRowsToggle';
+
+const getVisibleFamilles = (familles, expandedIds) => {
+  const familyIds = new Set(familles.map((famille) => famille.id));
+  const childrenByParent = new Map();
+  familles.forEach((famille) => {
+    const parentId = familyIds.has(famille.familleParentId) ? famille.familleParentId : null;
+    childrenByParent.set(parentId, [...(childrenByParent.get(parentId) ?? []), famille]);
+  });
+
+  const rows = [];
+  const addRows = (parentId, depth) => {
+    (childrenByParent.get(parentId) ?? [])
+      .sort((first, second) => first.nom.localeCompare(second.nom, 'fr'))
+      .forEach((famille) => {
+        const hasChildren = (childrenByParent.get(famille.id) ?? []).length > 0;
+        rows.push({ famille, depth, hasChildren });
+        if (hasChildren && expandedIds.has(famille.id)) addRows(famille.id, depth + 1);
+      });
+  };
+
+  addRows(null, 0);
+  return rows;
+};
 
 function FamilleArticleList({ canManage }) {
   const [familles, setFamilles] = useState([]);
@@ -14,14 +36,14 @@ function FamilleArticleList({ canManage }) {
   const [familleToDelete, setFamilleToDelete] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showAllRows, setShowAllRows] = useState(false);
+  const [expandedFamilleIds, setExpandedFamilleIds] = useState(new Set());
 
   const fetchFamilles = async () => {
     try {
       setLoading(true);
       setFamilles(await getAllFamillesArticles());
       setError(null);
-      setShowAllRows(false);
+      setExpandedFamilleIds(new Set());
     } catch {
       setError('Impossible de charger les familles.');
     } finally {
@@ -31,7 +53,13 @@ function FamilleArticleList({ canManage }) {
 
   useEffect(() => { fetchFamilles(); }, []);
   const closeForm = () => { setIsFormOpen(false); setFamilleToEdit(null); };
-  const displayedFamilles = showAllRows ? familles : familles.slice(0, 5);
+  const displayedFamilles = getVisibleFamilles(familles, expandedFamilleIds);
+  const toggleFamille = (familleId) => setExpandedFamilleIds((current) => {
+    const next = new Set(current);
+    if (next.has(familleId)) next.delete(familleId);
+    else next.add(familleId);
+    return next;
+  });
   const confirmDelete = async () => {
     if (!familleToDelete) return;
     try {
@@ -52,7 +80,7 @@ function FamilleArticleList({ canManage }) {
     {isFormOpen && <Modal title={familleToEdit ? 'Modifier la famille' : 'Nouvelle famille'} onClose={closeForm}><FamilleArticleForm famille={familleToEdit} familles={familles} onSaved={async () => { await fetchFamilles(); closeForm(); }} onCancel={closeForm} /></Modal>}
     {familleToDelete && <DeleteConfirmationModal itemName={'la famille « ' + familleToDelete.nom + ' »'} impact="Cette action supprime les sous-familles, tous leurs articles ainsi que les stocks, mouvements, vérifications et signalements associés." onConfirm={confirmDelete} onCancel={() => setFamilleToDelete(null)} isDeleting={isDeleting} />}
     {actionError && <p className="form-error" role="alert">{actionError}</p>}{loading && <p>Chargement des familles...</p>}{error && <p className="form-error">{error}</p>}
-    {!loading && !error && <><div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Nom</th><th>Famille parente</th>{canManage && <th>Actions</th>}</tr></thead><tbody>{familles.length === 0 ? <tr><td colSpan={canManage ? 4 : 3} className="empty-cell">Aucune famille enregistrée.</td></tr> : displayedFamilles.map((famille) => <tr key={famille.id}><td>{famille.reference || '—'}</td><td>{famille.nom}</td><td>{famille.referenceFamilleParent ?? '—'}</td>{canManage && <td className="table-actions"><button type="button" onClick={() => { setFamilleToEdit(famille); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => setFamilleToDelete(famille)}>Supprimer</button></td>}</tr>)}</tbody></table></div>{familles.length > 5 && <TableRowsToggle isExpanded={showAllRows} onToggle={() => setShowAllRows((value) => !value)} />}</>}
+    {!loading && !error && <div className="table-wrapper"><table><thead><tr><th>Référence</th><th>Nom</th>{canManage && <th>Actions</th>}</tr></thead><tbody>{familles.length === 0 ? <tr><td colSpan={canManage ? 3 : 2} className="empty-cell">Aucune famille enregistrée.</td></tr> : displayedFamilles.map(({ famille, depth, hasChildren }) => { const isExpanded = expandedFamilleIds.has(famille.id); return <tr key={famille.id} className={depth > 0 ? 'hierarchy-row hierarchy-row--child' : 'hierarchy-row'}><td>{famille.reference || '—'}</td><td><div className="hierarchy-label" style={{ paddingLeft: `${depth * 22}px` }}>{hasChildren ? <button type="button" className="hierarchy-toggle" onClick={() => toggleFamille(famille.id)} aria-expanded={isExpanded}><span aria-hidden="true">{isExpanded ? '⌄' : '›'}</span>{famille.nom}</button> : <span className="hierarchy-leaf">{famille.nom}</span>}</div></td>{canManage && <td className="table-actions"><button type="button" onClick={() => { setFamilleToEdit(famille); setActionError(null); setIsFormOpen(true); }}>Modifier</button><button type="button" className="danger-button" onClick={() => setFamilleToDelete(famille)}>Supprimer</button></td>}</tr>; })}</tbody></table></div>}
   </section>;
 }
 

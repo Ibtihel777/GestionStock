@@ -14,3 +14,9 @@ export const getConsultantRequests = async () => (await api.get(`${API_URL}/cons
 export const approveConsultantRequest = async (id) => api.patch(`${API_URL}/consultant-requests/${id}/accepter`);
 
 export const rejectConsultantRequest = async (id) => api.patch(`${API_URL}/consultant-requests/${id}/refuser`);
+
+export const getProfile = async () => (await api.get(`${API_URL}/profile`)).data;
+
+export const updateProfile = async (profile) => (await api.put(`${API_URL}/profile`, profile)).data;
+
+export const getUsers = async () => (await api.get(`${API_URL}/users`)).data;

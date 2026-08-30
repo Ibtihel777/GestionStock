@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { login, register } from '../services/authService';
 
-function Login({ onLogin }) {
+function Login({ onLogin, onBack, initialMode = 'login' }) {
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
   const [telephone, setTelephone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(initialMode === 'register');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -55,7 +55,8 @@ function Login({ onLogin }) {
 
   return (
     <main className="login-page">
-      <form className="login-card" onSubmit={handleSubmit}>
+      <form className={`login-card${isRegistering ? ' login-card--register' : ''}`} onSubmit={handleSubmit}>
+        {onBack && <button className="login-back-button" type="button" onClick={onBack}>← Accueil</button>}
         <p className="eyebrow">ERPStock</p>
         <h1>{isRegistering ? 'Créer un compte' : 'Connexion'}</h1>
         <p>{isRegistering ? 'Votre demande de compte Consultant doit être validée par un administrateur.' : 'Accédez à la gestion de stock selon votre rôle.'}</p>

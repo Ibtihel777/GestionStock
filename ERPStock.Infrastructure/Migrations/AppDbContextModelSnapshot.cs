@@ -54,11 +54,20 @@ namespace ERPStock.Infrastructure.Migrations
                     b.Property<int>("SuiviStock")
                         .HasColumnType("integer");
 
+                    b.Property<int>("SeuilMinimum")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(10);
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("UnitesParCarton")
-                        .HasColumnType("integer");
+                    b.Property<string>("UniteMesure")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasDefaultValue("Unité");
 
                     b.HasKey("Id");
 

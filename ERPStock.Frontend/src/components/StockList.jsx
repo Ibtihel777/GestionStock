@@ -5,6 +5,12 @@ import Modal from './Modal';
 import StockForm from './StockForm';
 import TableRowsToggle from './TableRowsToggle';
 
+const getStockLevel = ({ quantiteTotaleArticle, articleSeuilMinimum }) => {
+  if (quantiteTotaleArticle <= articleSeuilMinimum) return { key: 'critical', label: 'Stock critique' };
+  if (quantiteTotaleArticle <= articleSeuilMinimum * 2) return { key: 'warning', label: 'Stock à surveiller' };
+  return { key: 'healthy', label: 'Stock suffisant' };
+};
+
 const StockList = forwardRef(function StockList({ canManage }, ref) {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +66,7 @@ const StockList = forwardRef(function StockList({ canManage }, ref) {
     {stockToDelete && <DeleteConfirmationModal itemName={'le stock de « ' + stockToDelete.articleReference + ' »'} impact={'Le stock à l’emplacement « ' + stockToDelete.codeEmplacement + ' » sera supprimé définitivement.'} onConfirm={confirmDelete} onCancel={() => setStockToDelete(null)} isDeleting={isDeleting} />}
     {actionError && <p className="form-error" role="alert">{actionError}</p>}{loading && <p>Chargement des stocks...</p>}{error && <p className="form-error" role="alert">{error}</p>}
     {!loading && !error && <><div className="table-search"><label htmlFor="stocks-search">Rechercher</label><input id="stocks-search" type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Article ou emplacement…" /></div><div className="table-wrapper"><table><thead><tr><th>Article</th><th>Emplacement</th><th>Quantité disponible</th>{canManage && <th>Actions</th>}</tr></thead><tbody>
-      {stocks.length === 0 ? <tr><td colSpan={canManage ? 4 : 3} className="empty-cell">Aucun stock disponible.</td></tr> : filteredStocks.length === 0 ? <tr><td colSpan={canManage ? 4 : 3} className="empty-cell">Aucun stock ne correspond à cette recherche.</td></tr> : displayedStocks.map((stock) => <tr key={stock.id}><td>{stock.articleReference}</td><td>{stock.codeEmplacement}</td><td>{stock.quantite}</td>{canManage && <td className="table-actions"><button type="button" className="edit-article-button" onClick={() => { setStockToEdit(stock); setActionError(null); }}>Modifier</button><button type="button" className="danger-button" onClick={() => setStockToDelete(stock)}>Supprimer</button></td>}</tr>)}
+      {stocks.length === 0 ? <tr><td colSpan={canManage ? 4 : 3} className="empty-cell">Aucun stock disponible.</td></tr> : filteredStocks.length === 0 ? <tr><td colSpan={canManage ? 4 : 3} className="empty-cell">Aucun stock ne correspond à cette recherche.</td></tr> : displayedStocks.map((stock) => { const stockLevel = getStockLevel(stock); return <tr key={stock.id}><td>{stock.articleReference}</td><td>{stock.codeEmplacement}</td><td><span className={`stock-quantity stock-quantity--${stockLevel.key}`} title={stockLevel.label}>{stock.quantite}</span></td>{canManage && <td className="table-actions"><button type="button" className="edit-article-button" onClick={() => { setStockToEdit(stock); setActionError(null); }}>Modifier</button><button type="button" className="danger-button" onClick={() => setStockToDelete(stock)}>Supprimer</button></td>}</tr>; })}
     </tbody></table></div>{!isSearching && filteredStocks.length > 5 && <TableRowsToggle isExpanded={showAllRows} onToggle={() => setShowAllRows((current) => !current)} />}</>}
   </section>;
 });
