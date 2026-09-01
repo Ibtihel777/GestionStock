@@ -5,5 +5,8 @@
     "**/obj": true,
     "**/node_modules": true
   },
+  "files.associations": {
+    "erpstock_backup.sql": "sql-postgresql"
+  },
   "FSharp.suggestGitignore": false
 }

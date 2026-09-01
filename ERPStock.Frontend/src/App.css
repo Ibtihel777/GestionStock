@@ -69,8 +69,8 @@
 
 .login-back-button { justify-self: start; padding: 0; color: #536682; font-size: 0.84rem; background: transparent; border: 0; box-shadow: none; }
 .login-back-button:hover:not(:disabled) { color: var(--accent); background: transparent; transform: none; }
-.auth-modal { position: fixed; z-index: 20; inset: 0; display: grid; padding: 24px; background: rgba(16, 31, 66, .24); backdrop-filter: blur(9px); animation: modal-fade-in 180ms ease-out; place-items: center; }
-.auth-modal .login-page { min-height: 0; padding: 0; background: transparent; }.auth-modal .login-card { max-height: calc(100vh - 48px); overflow-y: auto; }
+.auth-modal { position: fixed; z-index: 20; inset: 0; display: grid; overflow-x: hidden; overflow-y: auto; padding: 24px; background: rgba(16, 31, 66, .24); backdrop-filter: blur(9px); animation: modal-fade-in 180ms ease-out; place-items: center; }
+.auth-modal .login-page { min-height: 0; padding: 0; background: transparent; }
 
 .landing-page { min-height: 100vh; overflow: hidden; color: #1b2745; background: #f8faff; }
 .landing-nav, .landing-hero, .landing-stats, .landing-features { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
@@ -101,9 +101,9 @@
 
 .login-card {
   display: grid;
-  gap: 16px;
+  gap: 22px;
   width: min(430px, 100%);
-  padding: 34px;
+  padding: 38px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -112,8 +112,11 @@
 
 .login-card h1 { color: var(--text-h); }
 .login-card label { display: grid; gap: 7px; color: var(--text-h); font-size: 0.88rem; font-weight: 650; }
-.login-card input { padding: 10px 11px; color: var(--text-h); border: 1px solid #d6deea; border-radius: 8px; }
+.login-card input { width: 100%; padding: 11px 12px; color: var(--text-h); border: 1px solid #d6deea; border-radius: 8px; }
 .login-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.login-card--register { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(760px, 100%); padding: 38px 42px; column-gap: 24px; }
+.login-card--register > :is(.login-back-button, .eyebrow, h1, p, .login-form-grid, button) { grid-column: 1 / -1; }
+.login-card--register .login-form-grid { gap: 24px; }
 .form-success { color: #147244; font-size: 0.9rem; font-weight: 650; }
 .login-mode-button { color: var(--accent); background: transparent; box-shadow: none; }
 .login-mode-button:hover:not(:disabled) { background: #eef2ff; }
@@ -806,11 +809,14 @@ button:hover:not(:disabled) {
 @keyframes modal-slide-in { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
 .sidebar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  width: 260px;
+  height: 100dvh;
+  overflow: hidden;
   padding: 26px 16px 20px;
   color: #dfe7ff;
   background: linear-gradient(180deg, #172a5e 0%, #263f85 100%);
@@ -821,7 +827,7 @@ button:hover:not(:disabled) {
 .sidebar-brand strong { display: block; color: #fff; font-size: 1.05rem; letter-spacing: -0.02em; }
 .sidebar-brand small { display: block; margin-top: 2px; color: #afc0ef; font-size: 0.72rem; }
 .sidebar-logo { display: block; flex: 0 0 42px; width: 42px; height: 42px; border-radius: 12px; box-shadow: 0 8px 18px rgba(9, 24, 66, 0.26); }
-.sidebar-navigation { display: grid; gap: 5px; }
+.sidebar-navigation { display: grid; flex: 1; min-height: 0; gap: 5px; overflow-y: auto; padding-right: 4px; }
 .sidebar-navigation button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 11px 12px; color: #d8e2ff; font-size: 0.88rem; font-weight: 680; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 9px; box-shadow: none; }
 .sidebar-navigation button > span { display: grid; width: 20px; height: 20px; font-size: 1rem; place-items: center; }
 .sidebar-navigation button:hover:not(:disabled) { color: #fff; background: rgba(255, 255, 255, 0.09); }
@@ -831,7 +837,7 @@ button:hover:not(:disabled) {
 .sidebar-footer span { width: fit-content; padding: 3px 7px; color: #d9e5ff; font-size: 0.69rem; font-weight: 750; background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
 .sidebar-footer .logout-button { width: 100%; margin-top: 5px; color: #fff; background: rgba(255, 255, 255, 0.1); }
 
-.app-content { min-width: 0; padding: 42px clamp(20px, 4vw, 56px) 64px; }
+.app-content { grid-column: 2; min-width: 0; padding: 42px clamp(20px, 4vw, 56px) 64px; }
 .content-header { display: flex; align-items: center; min-height: 62px; margin-bottom: 25px; }
 .content-header h1 { margin: 3px 0 0; color: var(--text-h); font-size: clamp(1.65rem, 3vw, 2.25rem); letter-spacing: -0.045em; }
 .eyebrow { color: var(--accent); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.11em; text-transform: uppercase; }
@@ -868,6 +874,10 @@ button:hover:not(:disabled) {
   .alert-preview-row time { grid-column: 2; text-align: left; }
   .entity-form { padding: 17px; }
   .entity-form form { grid-template-columns: 1fr; }
+  .login-card { padding: 28px 22px; }
+  .login-card--register { grid-template-columns: 1fr; padding: 28px 22px; }
+  .login-card--register > * { grid-column: auto; }
+  .login-card--register .login-form-grid { gap: 16px; }
   .login-form-grid { grid-template-columns: 1fr; }
   .initial-stock-fields { grid-template-columns: 1fr; }
   .entity-list-header > button { width: 100%; }
@@ -876,11 +886,11 @@ button:hover:not(:disabled) {
 @media (max-width: 850px) {
   .landing-hero { grid-template-columns: minmax(0, 1fr) minmax(310px, .8fr); gap: 20px; }.landing-float-card-stock { right: 0; }.landing-float-card-ai { left: 0; }
   .app-shell.app-layout { display: block; }
-  .sidebar { position: static; min-height: auto; padding: 16px; }
+  .sidebar { position: static; width: auto; height: auto; min-height: auto; overflow: visible; padding: 16px; }
   .sidebar-brand { padding: 0 5px 13px; }
-  .sidebar-navigation { display: flex; overflow-x: auto; padding-bottom: 2px; }
+  .sidebar-navigation { display: flex; overflow-x: auto; padding: 0 0 2px; }
   .sidebar-navigation button { flex: 0 0 auto; width: auto; white-space: nowrap; }
   .sidebar-footer { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 5px 0; }
   .sidebar-footer .logout-button { width: auto; margin: 0 0 0 auto; }
-  .app-content { padding: 28px 18px 48px; }
+  .app-content { grid-column: auto; padding: 28px 18px 48px; }
 }
