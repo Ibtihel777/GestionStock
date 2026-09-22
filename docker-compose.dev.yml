@@ -1,0 +1,21 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ERPStock.API/Dockerfile
+      target: development
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./:/src
+      - /src/ERPStock.API/bin
+      - /src/ERPStock.API/obj
+
+  frontend:
+    build:
+      context: ./ERPStock.Frontend
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ./ERPStock.Frontend:/app
+      - /app/node_modules

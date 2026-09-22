@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: GestionStock
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD doit être défini dans .env}
     ports:
       - "5432:5432"
     volumes:
@@ -25,8 +25,13 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=GestionStock;Username=postgres;Password=${DB_PASSWORD}"
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=GestionStock;Username=postgres;Password=${DB_PASSWORD:?DB_PASSWORD doit être défini dans .env}"
+      Gemini__ApiKey: ${GEMINI_API_KEY:?GEMINI_API_KEY doit être défini dans .env}
+      Jwt__Key: ${JWT_KEY:?JWT_KEY doit être défini dans .env}
+      InitialUsers__SuperAdmin__Password: ${INITIAL_ADMIN_PASSWORD:?INITIAL_ADMIN_PASSWORD doit être défini dans .env}
+      InitialUsers__Consultant__Password: ${INITIAL_CONSULTANT_PASSWORD:?INITIAL_CONSULTANT_PASSWORD doit être défini dans .env}
     ports:
       - "5083:8080"
 
@@ -36,9 +41,16 @@ services:
       dockerfile: Dockerfile
     container_name: erpstock-frontend
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - "5173:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
 
 volumes:
   postgres_data:

@@ -1,0 +1,13 @@
+.git
+.github
+.vs
+**/bin
+**/obj
+**/node_modules
+**/dist
+*.user
+*.suo
+*.log
+.env
+appsettings.Development.json
+appsettings.Production.json
