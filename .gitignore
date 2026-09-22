@@ -35,3 +35,4 @@ ERPStock.Frontend/dist/
 
 ## Docker / Secrets ##
 .env
+k8s/secret.yaml

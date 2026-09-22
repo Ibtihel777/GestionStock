@@ -1,6 +1,8 @@
 import api from './api';
 
-const API_URL = 'http://localhost:5083/api/Article';
+import { API_BASE_URL } from './apiUrl';
+
+const API_URL = `${API_BASE_URL}/Article`;
 
 export const getAllArticles = async () => {
   const response = await api.get(API_URL);

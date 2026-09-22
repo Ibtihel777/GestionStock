@@ -1,6 +1,8 @@
 import api from './api';
 
-const API_URL = 'http://localhost:5083/api/FamilleArticle';
+import { API_BASE_URL } from './apiUrl';
+
+const API_URL = `${API_BASE_URL}/FamilleArticle`;
 
 export const getAllFamillesArticles = async () => (await api.get(API_URL)).data;
 export const createFamilleArticle = async (data) => (await api.post(API_URL, data)).data;

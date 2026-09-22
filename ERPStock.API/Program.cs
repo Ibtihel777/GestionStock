@@ -83,7 +83,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://erpstock.local")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -100,7 +100,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Le jeu de données de démonstration reste réservé au développement
-if (app.Environment.IsDevelopment())
+var seedDemoData = app.Environment.IsDevelopment()
+                   || builder.Configuration.GetValue<bool>("SeedDemoData:Enabled");
+if (seedDemoData)
 {
     await DashboardDemoDataSeeder.SeedAsync(app.Services);
 }
